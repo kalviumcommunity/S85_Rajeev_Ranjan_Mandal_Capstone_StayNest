@@ -56,26 +56,106 @@ reviewSchema.index({ booking: 1 }, { unique: true });
 
 // Update property and host average ratings when a review is created
 reviewSchema.post('save', async function() {
-    const Property = mongoose.model('Property');
-    const User = mongoose.model('User');
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // Update property rating
-    const propertyReviews = await this.constructor.find({ property: this.property });
-    const propertyAvgRating = propertyReviews.reduce((acc, review) => acc + review.rating, 0) / propertyReviews.length;
-    
-    await Property.findByIdAndUpdate(this.property, {
-        'rating.average': propertyAvgRating,
-        'rating.count': propertyReviews.length
-    });
+    try {
+        // Update property rating using atomic operations
+        await mongoose.model('Property').findByIdAndUpdate(
+            this.property,
+            {
+                $inc: { 'rating.count': 1 },
+                $set: {
+                    'rating.average': {
+                        $avg: {
+                            $add: [
+                                { $multiply: ['$rating.average', '$rating.count'] },
+                                this.rating
+                            ]
+                        }
+                    }
+                }
+            },
+            { session }
+        );
 
-    // Update host rating
-    const hostReviews = await this.constructor.find({ host: this.host });
-    const hostAvgRating = hostReviews.reduce((acc, review) => acc + review.rating, 0) / hostReviews.length;
-    
-    await User.findByIdAndUpdate(this.host, {
-        'hostDetails.averageRating': hostAvgRating
-    });
+        // Update host rating using atomic operations
+        await mongoose.model('User').findByIdAndUpdate(
+            this.host,
+            {
+                $inc: { 'hostDetails.averageRating': this.rating },
+                $inc: { 'hostDetails.totalReviews': 1 }
+            },
+            { session }
+        );
+
+        await session.commitTransaction();
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+    }
 });
+
+// Static method to recalculate all ratings (can be used for maintenance)
+reviewSchema.statics.recalculateAllRatings = async function() {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // Recalculate property ratings
+        const propertyRatings = await this.aggregate([
+            {
+                $group: {
+                    _id: '$property',
+                    averageRating: { $avg: '$rating' },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        for (const rating of propertyRatings) {
+            await mongoose.model('Property').findByIdAndUpdate(
+                rating._id,
+                {
+                    'rating.average': rating.averageRating,
+                    'rating.count': rating.count
+                },
+                { session }
+            );
+        }
+
+        // Recalculate host ratings
+        const hostRatings = await this.aggregate([
+            {
+                $group: {
+                    _id: '$host',
+                    averageRating: { $avg: '$rating' },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        for (const rating of hostRatings) {
+            await mongoose.model('User').findByIdAndUpdate(
+                rating._id,
+                {
+                    'hostDetails.averageRating': rating.averageRating,
+                    'hostDetails.totalReviews': rating.count
+                },
+                { session }
+            );
+        }
+
+        await session.commitTransaction();
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+    }
+};
 
 const Review = mongoose.model('Review', reviewSchema);
 module.exports = Review; 
