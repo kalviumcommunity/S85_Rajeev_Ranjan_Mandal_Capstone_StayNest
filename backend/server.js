@@ -16,6 +16,12 @@ mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('MongoDB connection error:', err));
 
+// Import routes
+const userRoutes = require('./routes/userRoutes');
+
+// Use routes
+app.use('/api/users', userRoutes);
+
 // Test route
 app.get('/', (req, res) => {
     res.send('StayNest API is running');
