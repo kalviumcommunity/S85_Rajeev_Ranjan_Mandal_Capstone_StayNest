@@ -18,9 +18,13 @@ mongoose.connect(process.env.MONGO_URL)
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const propertyRoutes = require('./routes/propertyRoutes');
 
 // Use routes
 app.use('/api/users', userRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/properties', propertyRoutes);
 
 // Test route
 app.get('/', (req, res) => {
