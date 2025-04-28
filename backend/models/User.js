@@ -36,29 +36,35 @@ const userSchema = new mongoose.Schema({
         default: false
     },
     hostDetails: {
-        isHost: {
-            type: Boolean,
-            default: false
+        type: {
+            isHost: {
+                type: Boolean,
+                default: false
+            },
+            hostSince: Date,
+            totalListings: {
+                type: Number,
+                default: 0
+            },
+            averageRating: {
+                type: Number,
+                default: 0
+            }
         },
-        hostSince: Date,
-        totalListings: {
-            type: Number,
-            default: 0
-        },
-        averageRating: {
-            type: Number,
-            default: 0
-        }
+        default: () => ({})
     },
     guestDetails: {
-        totalBookings: {
-            type: Number,
-            default: 0
+        type: {
+            totalBookings: {
+                type: Number,
+                default: 0
+            },
+            wishlist: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Property'
+            }]
         },
-        wishlist: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Property'
-        }]
+        default: () => ({})
     }
 }, {
     timestamps: true

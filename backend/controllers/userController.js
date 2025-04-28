@@ -3,7 +3,17 @@ const User = require('../models/User');
 // Register a new user
 const register = async (req, res) => {
     try {
-        const { name, email, password, role, phone } = req.body;
+        const { 
+            name, 
+            email, 
+            password, 
+            role, 
+            phone, 
+            profilePicture,
+            isVerified,
+            hostDetails,
+            guestDetails 
+        } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -17,7 +27,11 @@ const register = async (req, res) => {
             email,
             password,
             role,
-            phone
+            phone,
+            profilePicture,
+            isVerified,
+            hostDetails,
+            guestDetails
         });
 
         await user.save();
