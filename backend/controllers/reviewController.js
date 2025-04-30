@@ -53,6 +53,45 @@ const createReview = async (req, res) => {
     }
 };
 
+// Get all reviews
+const getAllReviews = async (req, res) => {
+    try {
+        const reviews = await Review.find()
+            .populate('property')
+            .populate('guest', 'name email profilePicture')
+            .populate('host', 'name email profilePicture')
+            .populate('booking');
+        res.status(200).json(reviews);
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error fetching reviews',
+            error: error.message
+        });
+    }
+};
+
+// Get review by ID
+const getReviewById = async (req, res) => {
+    try {
+        const review = await Review.findById(req.params.id)
+            .populate('property')
+            .populate('guest', 'name email profilePicture')
+            .populate('host', 'name email profilePicture')
+            .populate('booking');
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+        res.status(200).json(review);
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error fetching review',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
-    createReview
+    createReview,
+    getAllReviews,
+    getReviewById
 }; 

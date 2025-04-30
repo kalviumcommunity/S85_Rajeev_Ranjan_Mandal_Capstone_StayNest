@@ -57,6 +57,41 @@ const createProperty = async (req, res) => {
     }
 };
 
+// Get all properties
+const getAllProperties = async (req, res) => {
+    try {
+        const properties = await Property.find()
+            .populate('host', 'name email profilePicture')
+            .populate('reviews');
+        res.status(200).json(properties);
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error fetching properties',
+            error: error.message
+        });
+    }
+};
+
+// Get property by ID
+const getPropertyById = async (req, res) => {
+    try {
+        const property = await Property.findById(req.params.id)
+            .populate('host', 'name email profilePicture')
+            .populate('reviews');
+        if (!property) {
+            return res.status(404).json({ message: 'Property not found' });
+        }
+        res.status(200).json(property);
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error fetching property',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
-    createProperty
+    createProperty,
+    getAllProperties,
+    getPropertyById
 }; 
