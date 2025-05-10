@@ -14,4 +14,5 @@ router.get('/:id', getUserById);
 // Update user by ID
 router.put('/:id', updateUser);
 
-module.exports = router; 
+module.exports = router;   
+
