@@ -23,13 +23,18 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const propertyRoutes = require("./routes/propertyRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const wishlistRoutes = require("./routes/wishListRoutes"); 
+const fileUploadRoutes = require("./routes/fileUploadRoutes");
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
 
 // Use routes
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.use("/api/wishlist", wishlistRoutes); 
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/upload", fileUploadRoutes);
 
 // Test route
 app.get("/", (req, res) => {
