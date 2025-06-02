@@ -1,18 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { register, getAllUsers, getUserById, updateUser } = require('../controllers/userController');
+const { 
+  register, 
+  login, 
+  logout, 
+  getCurrentUser,
+  getAllUsers, 
+  getUserById, 
+  updateUser 
+} = require('../controllers/userController');
+const auth = require('../middleware/auth');
 
-// Register a new user
+// Public routes
 router.post('/register', register);
+router.post('/login', login);
+router.post('/logout', logout);
 
-// Get all users
+// Protected routes
+router.use(auth);
+
+router.get('/me', getCurrentUser);
 router.get('/', getAllUsers);
-
-// Get user by ID
 router.get('/:id', getUserById);
-
-// Update user by ID
 router.put('/:id', updateUser);
 
-module.exports = router;   
+module.exports = router;
 
