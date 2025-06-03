@@ -119,6 +119,16 @@ const Navbar = () => {
                         >
                           Your Profile
                         </Link>
+                        {(user?.role === "host" || user?.role === "admin") && (
+                          <Link
+                            to="/host/dashboard"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            role="menuitem"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            Host Dashboard
+                          </Link>
+                        )}
                         <button
                           onClick={() => {
                             handleLogout();

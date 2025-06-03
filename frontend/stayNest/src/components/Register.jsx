@@ -14,6 +14,7 @@ const Register = () => {
   const { register, error: authError } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,6 +63,7 @@ const Register = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setSuccessMessage("");
 
     // Prepare user data for registration
     const userData = {
@@ -71,11 +73,17 @@ const Register = () => {
       role: formData.role,
     };
 
-    const { success } = await register(userData);
+    const result = await register(userData);
     setIsSubmitting(false);
 
-    if (success) {
-      navigate("/"); // Redirect to home on successful registration
+    if (result.success) {
+      setSuccessMessage(
+        "Account created successfully! Redirecting to home page..."
+      );
+      // Delay redirect to show success message
+      setTimeout(() => {
+        navigate("/"); // Redirect to home on successful registration
+      }, 1500);
     }
   };
 
@@ -133,6 +141,23 @@ const Register = () => {
                   />
                 </svg>
                 {authError}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center">
+                <svg
+                  className="w-5 h-5 mr-2 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {successMessage}
               </div>
             )}
 

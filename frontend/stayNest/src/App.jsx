@@ -8,12 +8,14 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import PropertyList from "./components/PropertyList";
+import Properties from "./components/Properties";
 import PropertyDetail from "./components/PropertyDetail";
 import BookingRequest from "./components/BookingRequest";
 import Review from "./components/Review";
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
+import AddProperty from "./components/AddProperty";
+import HostDashboard from "./components/HostDashboard";
 import "./App.css";
 
 // Protected Route Component
@@ -49,11 +51,11 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-6 md:py-8 lg:py-10">
+      <main className="flex-grow">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/properties" element={<PropertyList />} />
+          <Route path="/properties" element={<Properties />} />
           <Route path="/properties/:id" element={<PropertyDetail />} />
 
           {/* Auth Routes - Only accessible when not logged in */}
@@ -113,7 +115,15 @@ function AppContent() {
             path="/host/dashboard"
             element={
               <PrivateRoute roles={["host", "admin"]}>
-                <div className="max-w-6xl mx-auto">Host Dashboard</div>
+                <HostDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/host/add-property"
+            element={
+              <PrivateRoute roles={["host", "admin"]}>
+                <AddProperty />
               </PrivateRoute>
             }
           />
