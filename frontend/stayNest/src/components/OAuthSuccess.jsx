@@ -1,52 +1,83 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const OAuthSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setUser } = useAuth();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const userParam = searchParams.get('user');
+    // Prevent double processing in React StrictMode
+    if (hasProcessed.current) {
+      console.log("OAuth already processed, skipping...");
+      return;
+    }
 
-    if (token && userParam) {
-      try {
-        // Parse user data
-        const userData = JSON.parse(decodeURIComponent(userParam));
-        
-        // Store token in localStorage
-        localStorage.setItem('token', token);
-        
-        // Set axios default header
-        import('axios').then(axios => {
-          axios.default.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        });
-        
-        // Set user in context
-        setUser(userData);
-        
-        // Show success message
-        const successMessage = `Welcome ${userData.name}! You've successfully logged in with Google.`;
-        
-        // Redirect to home page after a short delay
-        setTimeout(() => {
-          navigate('/', { 
-            state: { 
-              message: successMessage,
-              type: 'success' 
-            } 
-          });
-        }, 2000);
-        
-      } catch (error) {
-        console.error('Error processing OAuth success:', error);
-        navigate('/login?error=oauth_processing_failed');
-      }
+    console.log("OAuthSuccess component mounted");
+    console.log("Current URL:", window.location.href);
+
+    const token = searchParams.get("token");
+    console.log("Token from URL:", token ? "Found" : "Missing");
+
+    if (token) {
+      hasProcessed.current = true;
+      const processOAuth = async () => {
+        try {
+          console.log("Processing OAuth success...");
+
+          // Store token in localStorage
+          localStorage.setItem("token", token);
+          console.log("Token stored in localStorage");
+
+          // Set axios default header
+          const axios = (await import("axios")).default;
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          console.log("Axios header set");
+
+          // Fetch user data using the token
+          console.log("Fetching user data...");
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/auth/current`
+          );
+
+          if (response.data.success) {
+            const userData = response.data.user;
+            console.log("User data fetched:", userData);
+
+            // Set user in context
+            setUser(userData);
+            console.log("User set in context");
+
+            // Show success message
+            const successMessage = `Welcome ${userData.name}! You've successfully logged in with Google.`;
+            console.log("Success message:", successMessage);
+
+            // Redirect to home page after a short delay
+            console.log("Setting timeout for redirect...");
+            setTimeout(() => {
+              console.log("Redirecting to home page...");
+              navigate("/", {
+                state: {
+                  message: successMessage,
+                  type: "success",
+                },
+              });
+            }, 1500);
+          } else {
+            throw new Error("Failed to fetch user data");
+          }
+        } catch (error) {
+          console.error("Error processing OAuth success:", error);
+          navigate("/login?error=oauth_processing_failed");
+        }
+      };
+
+      processOAuth();
     } else {
-      // Missing parameters, redirect to login with error
-      navigate('/login?error=oauth_missing_params');
+      console.log("Missing token parameter");
+      navigate("/login?error=oauth_missing_token");
     }
   }, [searchParams, navigate, setUser]);
 
@@ -77,21 +108,25 @@ const OAuthSuccess = () => {
               ></path>
             </svg>
           </div>
-          
+
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Authentication Successful!
           </h2>
-          <p className="text-gray-600 mb-4">
-            Processing your login...
-          </p>
-          
+          <p className="text-gray-600 mb-4">Processing your login...</p>
+
           {/* Success Animation */}
           <div className="flex justify-center">
             <div className="animate-pulse">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                <div
+                  className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"
+                  style={{ animationDelay: "0.1s" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
+                ></div>
               </div>
             </div>
           </div>
