@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
@@ -15,8 +14,8 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // If we get a 401, clear the authentication state
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
       // You might want to redirect to login here or handle it in the component
     }
     return Promise.reject(error);
@@ -27,13 +26,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   // Set up axios defaults and fetch user on initial load
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       fetchUser();
     } else {
       setLoading(false);
@@ -48,14 +46,16 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
         // Update the token in localStorage if a new one was returned
         if (data.token) {
-          localStorage.setItem('token', data.token);
-          axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+          localStorage.setItem("token", data.token);
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${data.token}`;
         }
       } else {
-        throw new Error(data.message || 'Failed to fetch user');
+        throw new Error(data.message || "Failed to fetch user");
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      console.error("Error fetching user:", error);
       // Don't clear auth state here to prevent redirect loops
       // The interceptor will handle 401 responses
     } finally {
@@ -68,21 +68,22 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const { data } = await axios.post(`${API_URL}/users/register`, userData);
-      
+
       if (data.success && data.token) {
-        localStorage.setItem('token', data.token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        localStorage.setItem("token", data.token);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         setUser(data.user);
         return { success: true };
       } else {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data.message || "Registration failed");
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      const errorMessage =
+        error.response?.data?.message || error.message || "Registration failed";
       setError(errorMessage);
-      return { 
-        success: false, 
-        error: errorMessage 
+      return {
+        success: false,
+        error: errorMessage,
       };
     }
   };
@@ -92,21 +93,22 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const { data } = await axios.post(`${API_URL}/users/login`, credentials);
-      
+
       if (data.success && data.token) {
-        localStorage.setItem('token', data.token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        localStorage.setItem("token", data.token);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         setUser(data.user);
         return { success: true };
       } else {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      const errorMessage =
+        error.response?.data?.message || error.message || "Login failed";
       setError(errorMessage);
-      return { 
-        success: false, 
-        error: errorMessage 
+      return {
+        success: false,
+        error: errorMessage,
       };
     }
   };
@@ -116,14 +118,13 @@ export const AuthProvider = ({ children }) => {
     try {
       await axios.post(`${API_URL}/users/logout`);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       // Always clear the auth state, even if the API call fails
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
       setUser(null);
-      // Redirect to home page after logout
-      navigate('/');
+      // Note: Navigation should be handled by the component calling logout
     }
   };
 
@@ -150,7 +151,7 @@ export const AuthProvider = ({ children }) => {
         fetchUser, // Expose fetchUser to allow manual refresh of user data
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
@@ -158,7 +159,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
