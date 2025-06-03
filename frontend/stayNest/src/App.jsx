@@ -13,6 +13,7 @@ import PropertyDetail from "./components/PropertyDetail";
 import BookingRequest from "./components/BookingRequest";
 import Review from "./components/Review";
 import Navbar from "./components/Navbar";
+import OAuthSuccess from "./components/OAuthSuccess";
 import Home from "./components/Home";
 import AddProperty from "./components/AddProperty";
 import HostDashboard from "./components/HostDashboard";
@@ -57,6 +58,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/properties" element={<Properties />} />
           <Route path="/properties/:id" element={<PropertyDetail />} />
+          <Route path="/auth/success" element={<OAuthSuccess />} />
 
           {/* Auth Routes - Only accessible when not logged in */}
           <Route

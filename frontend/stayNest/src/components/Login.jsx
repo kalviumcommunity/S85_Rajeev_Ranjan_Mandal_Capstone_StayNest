@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoogleOAuthButton from "./GoogleOAuthButton";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -299,6 +300,21 @@ const Login = () => {
                     </>
                   )}
                 </button>
+              </div>
+
+              <div className="relative mt-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-3 bg-white text-gray-500">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <GoogleOAuthButton text="Sign in with Google" />
               </div>
 
               <div className="relative mt-6">

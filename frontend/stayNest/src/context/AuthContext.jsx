@@ -137,6 +137,11 @@ export const AuthProvider = ({ children }) => {
     return user.role === requiredRoles;
   };
 
+  // Set user directly (for OAuth success)
+  const setUserData = (userData) => {
+    setUser(userData);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -149,6 +154,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         fetchUser, // Expose fetchUser to allow manual refresh of user data
+        setUser: setUserData, // Expose setUser for OAuth success
       }}
     >
       {children}
