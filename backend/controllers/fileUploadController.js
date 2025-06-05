@@ -75,8 +75,6 @@ const uploadToCloudinary = async (file) => {
   }
 };
 
-exports.uploadSingleImage = upload.single("image");
-
 exports.handleImageUpload = async (req, res) => {
   try {
     if (!req.file) {

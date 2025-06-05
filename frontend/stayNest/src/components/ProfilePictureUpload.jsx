@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
 const ProfilePictureUpload = ({
@@ -11,6 +11,26 @@ const ProfilePictureUpload = ({
   const [uploadError, setUploadError] = useState("");
   const [previewImage, setPreviewImage] = useState(currentImage);
   const fileInputRef = useRef(null);
+  const fileReaderRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+
+      // Cleanup FileReader
+      if (fileReaderRef.current) {
+        fileReaderRef.current.abort();
+      }
+
+      // Cleanup fetch request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
@@ -30,11 +50,22 @@ const ProfilePictureUpload = ({
       return;
     }
 
-    // Create preview
+    // Create preview with cleanup
     const reader = new FileReader();
+    fileReaderRef.current = reader;
+
     reader.onload = (e) => {
-      setPreviewImage(e.target.result);
+      if (isMountedRef.current) {
+        setPreviewImage(e.target.result);
+      }
     };
+
+    reader.onerror = () => {
+      if (isMountedRef.current) {
+        setUploadError("Failed to read file");
+      }
+    };
+
     reader.readAsDataURL(file);
 
     // Upload file
@@ -42,10 +73,16 @@ const ProfilePictureUpload = ({
   };
 
   const uploadFile = async (file) => {
+    if (!isMountedRef.current) return;
+
     setIsUploading(true);
     setUploadError("");
 
     try {
+      // Create AbortController for this request
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
       const formData = new FormData();
       formData.append("image", file);
 
@@ -57,33 +94,46 @@ const ProfilePictureUpload = ({
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: formData,
+          signal: abortController.signal, // Add abort signal
         }
       );
+
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) return;
 
       const data = await response.json();
 
       if (response.ok && data.success && data.imageUrl) {
-        setPreviewImage(data.imageUrl);
-        onImageUpdate(data.imageUrl);
+        if (isMountedRef.current) {
+          setPreviewImage(data.imageUrl);
+          onImageUpdate(data.imageUrl);
 
-        // Immediately update user context so avatar updates everywhere
-        if (user) {
-          setUser({
-            ...user,
-            profilePicture: data.imageUrl,
-          });
+          // Immediately update user context so avatar updates everywhere
+          if (user) {
+            setUser({
+              ...user,
+              profilePicture: data.imageUrl,
+            });
+          }
+
+          setUploadError("");
         }
-
-        setUploadError("");
       } else {
         throw new Error(data.message || "Upload failed");
       }
     } catch (error) {
+      // Don't update state if component is unmounted or request was aborted
+      if (!isMountedRef.current || error.name === "AbortError") return;
+
       console.error("Upload error:", error);
       setUploadError(error.message || "Failed to upload image");
       setPreviewImage(currentImage); // Reset to original image
     } finally {
-      setIsUploading(false);
+      if (isMountedRef.current) {
+        setIsUploading(false);
+      }
+      // Clear the abort controller reference
+      abortControllerRef.current = null;
     }
   };
 
@@ -92,6 +142,8 @@ const ProfilePictureUpload = ({
   };
 
   const removeImage = () => {
+    if (!isMountedRef.current) return;
+
     setPreviewImage("");
     onImageUpdate("");
     if (fileInputRef.current) {
