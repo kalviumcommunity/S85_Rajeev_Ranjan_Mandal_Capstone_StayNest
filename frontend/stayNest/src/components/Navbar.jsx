@@ -98,11 +98,19 @@ const Navbar = () => {
                       aria-haspopup="true"
                     >
                       <span className="sr-only">Open user menu</span>
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center shadow-md">
-                        <span className="text-blue-600 font-medium">
-                          {user?.name?.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                      {user?.profilePicture ? (
+                        <img
+                          className="h-8 w-8 rounded-full object-cover shadow-md"
+                          src={user.profilePicture}
+                          alt={user.name}
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center shadow-md">
+                          <span className="text-blue-600 font-medium">
+                            {user?.name?.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
                     </button>
                     {isProfileMenuOpen && (
                       <div
@@ -254,11 +262,19 @@ const Navbar = () => {
             <>
               <div className="flex items-center px-4">
                 <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shadow-md">
-                    <span className="text-blue-600 font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  {user?.profilePicture ? (
+                    <img
+                      className="h-10 w-10 rounded-full object-cover shadow-md"
+                      src={user.profilePicture}
+                      alt={user.name}
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shadow-md">
+                      <span className="text-blue-600 font-medium">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">

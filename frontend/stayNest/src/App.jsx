@@ -16,7 +16,9 @@ import Navbar from "./components/Navbar";
 import OAuthSuccess from "./components/OAuthSuccess";
 import Home from "./components/Home";
 import AddProperty from "./components/AddProperty";
+import EditProperty from "./components/EditProperty";
 import HostDashboard from "./components/HostDashboard";
+import UserProfile from "./components/UserProfile";
 import "./App.css";
 
 // Protected Route Component
@@ -126,6 +128,22 @@ function AppContent() {
             element={
               <PrivateRoute roles={["host", "admin"]}>
                 <AddProperty />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/host/edit-property/:id"
+            element={
+              <PrivateRoute roles={["host", "admin"]}>
+                <EditProperty />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <UserProfile />
               </PrivateRoute>
             }
           />
