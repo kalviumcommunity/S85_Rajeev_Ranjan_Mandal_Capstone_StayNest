@@ -65,11 +65,28 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Test Section - Simple styling to verify Tailwind */}
-      <div className="bg-red-500 text-white p-4 text-center">
-        <h1 className="text-2xl font-bold">
-          Tailwind Test - This should be red background with white text
-        </h1>
+      {/* Announcement Banner */}
+      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 text-center">
+        <div className="max-w-7xl mx-auto flex items-center justify-center space-x-2">
+          <svg
+            className="w-5 h-5 text-white"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <p className="text-sm md:text-base font-medium">
+            🎉 <strong>New!</strong> Book verified properties with instant
+            confirmation -
+            <span className="underline ml-1 cursor-pointer hover:text-green-100">
+              Get 20% off your first booking
+            </span>
+          </p>
+        </div>
       </div>
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 overflow-hidden">
@@ -101,8 +118,9 @@ const Home = () => {
               </h1>
 
               <p className="mt-4 text-base sm:text-lg text-blue-100 max-w-xl leading-relaxed">
-                Discover amazing places to stay at incredible prices. Book
-                unique homes, apartments, and more with confidence.
+                Discover handpicked properties from verified hosts worldwide.
+                From cozy apartments to luxury villas - find your perfect home
+                away from home with instant booking and 24/7 support.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 lg:justify-start justify-center">
@@ -247,8 +265,8 @@ const Home = () => {
               </span>
             </h2>
             <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 leading-relaxed">
-              Experience the difference with our premium homestay services
-              designed for modern travelers
+              Experience seamless booking, verified properties, and exceptional
+              hospitality that makes every stay memorable and worry-free.
             </p>
           </div>
 
