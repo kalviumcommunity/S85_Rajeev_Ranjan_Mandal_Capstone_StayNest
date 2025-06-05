@@ -386,6 +386,13 @@ const HostDashboard = () => {
                         View
                       </Link>
 
+                      <Link
+                        to={`/host/edit-property/${property.id}`}
+                        className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-colors"
+                      >
+                        Edit
+                      </Link>
+
                       <button
                         onClick={() => deleteProperty(property.id)}
                         className="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full hover:bg-red-200 transition-colors"
