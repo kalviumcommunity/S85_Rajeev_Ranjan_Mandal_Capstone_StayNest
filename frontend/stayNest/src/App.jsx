@@ -19,6 +19,10 @@ import AddProperty from "./components/AddProperty";
 import EditProperty from "./components/EditProperty";
 import HostDashboard from "./components/HostDashboard";
 import UserProfile from "./components/UserProfile";
+import Contact from "./components/Contact";
+import Support from "./components/Support";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsOfService from "./components/TermsOfService";
 import "./App.css";
 
 // Protected Route Component
@@ -61,6 +65,10 @@ function AppContent() {
           <Route path="/properties" element={<Properties />} />
           <Route path="/properties/:id" element={<PropertyDetail />} />
           <Route path="/auth/success" element={<OAuthSuccess />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
 
           {/* Auth Routes - Only accessible when not logged in */}
           <Route
@@ -179,22 +187,28 @@ function AppContent() {
             </p>
             <div className="flex space-x-4">
               <Link
-                to="/"
+                to="/privacy-policy"
                 className="text-gray-500 hover:text-blue-600 text-sm"
               >
                 Privacy Policy
               </Link>
               <Link
-                to="/"
+                to="/terms-of-service"
                 className="text-gray-500 hover:text-blue-600 text-sm"
               >
                 Terms of Service
               </Link>
               <Link
-                to="/"
+                to="/contact"
                 className="text-gray-500 hover:text-blue-600 text-sm"
               >
                 Contact Us
+              </Link>
+              <Link
+                to="/support"
+                className="text-gray-500 hover:text-blue-600 text-sm"
+              >
+                Support
               </Link>
             </div>
           </div>
