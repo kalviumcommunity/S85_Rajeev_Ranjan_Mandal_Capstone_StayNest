@@ -71,6 +71,7 @@ const propertyRoutes = require("./routes/propertyRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const wishlistRoutes = require("./routes/wishListRoutes");
 const fileUploadRoutes = require("./routes/fileUploadRoutes");
+const supportRoutes = require("./routes/support");
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static("uploads"));
@@ -83,6 +84,7 @@ app.use("/api/properties", propertyRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/upload", fileUploadRoutes);
+app.use("/api/support", supportRoutes);
 
 // Test route
 app.get("/", (req, res) => {
