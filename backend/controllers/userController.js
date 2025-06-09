@@ -29,8 +29,8 @@ const register = async (req, res) => {
         .json({ message: "User already exists with this email" });
     }
 
-    // Create new user
-    const user = new User({
+    // Prepare user data
+    const userData = {
       name,
       email,
       password,
@@ -38,7 +38,21 @@ const register = async (req, res) => {
       phone,
       profilePicture,
       isVerified: false,
-    });
+    };
+
+    // If registering as host, set hostDetails properly
+    if (role === "host") {
+      userData.hostDetails = {
+        isHost: true,
+        hostSince: new Date(),
+        totalListings: 0,
+        averageRating: 0,
+        totalReviews: 0,
+      };
+    }
+
+    // Create new user
+    const user = new User(userData);
 
     await user.save();
 
@@ -385,6 +399,62 @@ const deleteAccount = async (req, res) => {
   }
 };
 
+// Become a host (upgrade from guest to host)
+const becomeHost = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if user is already a host
+    if (user.role === "host" || user.hostDetails?.isHost) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already a host",
+      });
+    }
+
+    // Update user to become a host
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        role: "host",
+        "hostDetails.isHost": true,
+        "hostDetails.hostSince": new Date(),
+        "hostDetails.totalListings": 0,
+        "hostDetails.averageRating": 0,
+        "hostDetails.totalReviews": 0,
+      },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Successfully became a host!",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Become host error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error becoming a host",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -396,4 +466,5 @@ module.exports = {
   updateProfile,
   changePassword,
   deleteAccount,
+  becomeHost,
 };
