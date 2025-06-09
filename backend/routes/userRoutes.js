@@ -11,6 +11,7 @@ const {
   updateProfile,
   changePassword,
   deleteAccount,
+  becomeHost,
 } = require("../controllers/userController");
 const {
   uploadSingleImage,
@@ -31,6 +32,7 @@ router.put("/profile", updateProfile);
 router.post("/profile-picture", uploadSingleImage, handleProfilePictureUpload);
 router.put("/change-password", changePassword);
 router.delete("/account", deleteAccount);
+router.put("/become-host", becomeHost);
 router.get("/", getAllUsers);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
