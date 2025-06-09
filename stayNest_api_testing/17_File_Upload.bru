@@ -1,0 +1,33 @@
+meta {
+  name: 17 File Upload
+  type: http
+  seq: 17
+}
+
+post {
+  url: http://localhost:5000/api/upload/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: multipart/form-data
+}
+
+body:multipart-form {
+  image: @file(C:\path\to\your\test-image.jpg)
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return file URL", function() {
+    expect(res.getBody().url).to.be.a('string');
+  });
+}

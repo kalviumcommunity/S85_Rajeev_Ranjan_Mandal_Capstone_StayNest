@@ -1,0 +1,35 @@
+meta {
+  name: 12 Review Get All
+  type: http
+  seq: 12
+}
+
+get {
+  url: http://localhost:5000/api/reviews
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return array of reviews", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+  
+  test("Reviews should have required fields", function() {
+    if (res.getBody().length > 0) {
+      const review = res.getBody()[0];
+      expect(review).to.have.property('rating');
+      expect(review).to.have.property('comment');
+      expect(review).to.have.property('property');
+      expect(review).to.have.property('guest');
+    }
+  });
+}

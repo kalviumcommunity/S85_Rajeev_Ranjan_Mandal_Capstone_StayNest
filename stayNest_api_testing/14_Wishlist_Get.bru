@@ -1,0 +1,35 @@
+meta {
+  name: 14 Wishlist Get
+  type: http
+  seq: 14
+}
+
+get {
+  url: http://localhost:5000/api/wishlist/wishlist
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "userId": "{{currentUserId}}"
+  }
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return array of properties", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+}

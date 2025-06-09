@@ -1,0 +1,40 @@
+meta {
+  name: 10 Booking Get All
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:5000/api/bookings
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return array of bookings", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+  
+  test("Bookings should have required fields", function() {
+    if (res.getBody().length > 0) {
+      const booking = res.getBody()[0];
+      expect(booking).to.have.property('property');
+      expect(booking).to.have.property('guest');
+      expect(booking).to.have.property('host');
+      expect(booking).to.have.property('checkIn');
+      expect(booking).to.have.property('checkOut');
+    }
+  });
+}

@@ -1,0 +1,45 @@
+meta {
+  name: 05 User Become Host
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:5000/api/users/become-host
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return success true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Should update role to host", function() {
+    expect(res.getBody().user.role).to.equal("host");
+  });
+  
+  test("Should set isHost to true", function() {
+    expect(res.getBody().user.hostDetails.isHost).to.equal(true);
+  });
+  
+  test("Should set hostSince date", function() {
+    expect(res.getBody().user.hostDetails.hostSince).to.be.a('string');
+  });
+}

@@ -1,0 +1,46 @@
+meta {
+  name: 03 User Login
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:5000/api/users/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "jane.host@example.com",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return success true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Should return JWT token", function() {
+    expect(res.getBody().token).to.be.a('string');
+  });
+  
+  test("Should return user data", function() {
+    expect(res.getBody().user).to.be.an('object');
+  });
+}
+
+script:post-response {
+  // Save token for authenticated requests
+  bru.setEnvVar("authToken", res.getBody().token);
+  bru.setEnvVar("currentUserId", res.getBody().user._id);
+}

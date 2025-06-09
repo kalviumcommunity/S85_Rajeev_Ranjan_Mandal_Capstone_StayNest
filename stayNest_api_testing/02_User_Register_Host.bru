@@ -1,0 +1,57 @@
+meta {
+  name: 02 User Register Host
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5000/api/users/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Jane Host",
+    "email": "jane.host@example.com",
+    "password": "password123",
+    "role": "host",
+    "phone": "+1234567891"
+  }
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Should return success true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Should return user with host role", function() {
+    expect(res.getBody().user.role).to.equal("host");
+  });
+  
+  test("Should have isHost true", function() {
+    expect(res.getBody().user.hostDetails.isHost).to.equal(true);
+  });
+  
+  test("Should have hostSince date", function() {
+    expect(res.getBody().user.hostDetails.hostSince).to.be.a('string');
+  });
+  
+  test("Should return JWT token", function() {
+    expect(res.getBody().token).to.be.a('string');
+  });
+}
+
+script:post-response {
+  // Save host token for later use
+  bru.setEnvVar("hostToken", res.getBody().token);
+  bru.setEnvVar("hostId", res.getBody().user._id);
+}

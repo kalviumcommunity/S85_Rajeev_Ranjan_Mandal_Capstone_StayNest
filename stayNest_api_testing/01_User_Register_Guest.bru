@@ -1,0 +1,47 @@
+meta {
+  name: 01 User Register Guest
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5000/api/users/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "John Guest",
+    "email": "john.guest@example.com",
+    "password": "password123",
+    "role": "guest",
+    "phone": "+1234567890"
+  }
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Should return success true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Should return user with guest role", function() {
+    expect(res.getBody().user.role).to.equal("guest");
+  });
+  
+  test("Should not have isHost true", function() {
+    expect(res.getBody().user.hostDetails.isHost).to.not.equal(true);
+  });
+  
+  test("Should return JWT token", function() {
+    expect(res.getBody().token).to.be.a('string');
+  });
+}

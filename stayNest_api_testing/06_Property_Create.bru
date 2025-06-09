@@ -1,0 +1,89 @@
+meta {
+  name: 06 Property Create
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:5000/api/properties
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{hostToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "Beautiful Beach House",
+    "description": "A stunning beachfront property with amazing ocean views. Perfect for a relaxing vacation with family and friends.",
+    "hostId": "{{hostId}}",
+    "location": {
+      "address": "123 Ocean Drive",
+      "city": "Miami",
+      "state": "Florida",
+      "country": "USA",
+      "coordinates": {
+        "latitude": 25.7617,
+        "longitude": -80.1918
+      }
+    },
+    "price": 250,
+    "images": [
+      {
+        "url": "https://example.com/image1.jpg",
+        "public_id": "beach_house_1"
+      },
+      {
+        "url": "https://example.com/image2.jpg",
+        "public_id": "beach_house_2"
+      }
+    ],
+    "amenities": [
+      "WiFi",
+      "Air Conditioning",
+      "Kitchen",
+      "Parking",
+      "Pool",
+      "Beach Access"
+    ],
+    "propertyType": "house",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "maxGuests": 6,
+    "rules": [
+      "No smoking",
+      "No pets",
+      "Quiet hours after 10 PM"
+    ],
+    "cancellationPolicy": "moderate"
+  }
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Should return property data", function() {
+    expect(res.getBody().property).to.be.an('object');
+  });
+  
+  test("Should have correct title", function() {
+    expect(res.getBody().property.title).to.equal("Beautiful Beach House");
+  });
+  
+  test("Should have correct host", function() {
+    expect(res.getBody().property.host).to.be.a('string');
+  });
+}
+
+script:post-response {
+  // Save property ID for later use
+  bru.setEnvVar("propertyId", res.getBody().property._id);
+}
