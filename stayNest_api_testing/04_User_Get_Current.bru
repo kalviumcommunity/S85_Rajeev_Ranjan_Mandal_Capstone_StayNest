@@ -1,0 +1,37 @@
+meta {
+  name: 04 User Get Current
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:5000/api/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Should return success true", function() {
+    expect(res.getBody().success).to.equal(true);
+  });
+  
+  test("Should return user data", function() {
+    expect(res.getBody().user).to.be.an('object');
+  });
+  
+  test("Should not return password", function() {
+    expect(res.getBody().user.password).to.be.undefined;
+  });
+}

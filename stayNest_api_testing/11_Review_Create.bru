@@ -1,0 +1,62 @@
+meta {
+  name: 11 Review Create
+  type: http
+  seq: 11
+}
+
+post {
+  url: http://localhost:5000/api/reviews
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "booking": "{{bookingId}}",
+    "property": "{{propertyId}}",
+    "guest": "{{currentUserId}}",
+    "host": "{{hostId}}",
+    "rating": 5,
+    "comment": "Amazing property! The beach house exceeded all our expectations. The location was perfect, the amenities were top-notch, and the host was very responsive. Would definitely stay here again!",
+    "categories": {
+      "cleanliness": 5,
+      "communication": 5,
+      "checkIn": 4,
+      "accuracy": 5,
+      "location": 5,
+      "value": 4
+    }
+  }
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Should return review data", function() {
+    expect(res.getBody().review).to.be.an('object');
+  });
+  
+  test("Should have correct rating", function() {
+    expect(res.getBody().review.rating).to.equal(5);
+  });
+  
+  test("Should have category ratings", function() {
+    expect(res.getBody().review.categories).to.be.an('object');
+    expect(res.getBody().review.categories.cleanliness).to.equal(5);
+  });
+}
+
+script:post-response {
+  // Save review ID for later use
+  bru.setEnvVar("reviewId", res.getBody().review._id);
+}

@@ -1,0 +1,36 @@
+meta {
+  name: 13 Wishlist Add Property
+  type: http
+  seq: 13
+}
+
+post {
+  url: http://localhost:5000/api/wishlist/wishlist
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "userId": "{{currentUserId}}",
+    "propertyId": "{{propertyId}}"
+  }
+}
+
+tests {
+  test("Status should be 200 or 201", function() {
+    expect([200, 201]).to.include(res.getStatus());
+  });
+  
+  test("Should return success message", function() {
+    expect(res.getBody().message).to.be.a('string');
+  });
+}

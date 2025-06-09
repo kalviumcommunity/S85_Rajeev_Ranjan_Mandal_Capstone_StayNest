@@ -1,0 +1,74 @@
+meta {
+  name: 09 Booking Create
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:5000/api/bookings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "property": "{{propertyId}}",
+    "guest": "{{currentUserId}}",
+    "host": "{{hostId}}",
+    "checkIn": "2024-07-15T15:00:00.000Z",
+    "checkOut": "2024-07-20T11:00:00.000Z",
+    "guests": {
+      "adults": 2,
+      "children": 1,
+      "infants": 0
+    },
+    "totalPrice": 1250,
+    "priceBreakdown": {
+      "basePrice": 1000,
+      "cleaningFee": 100,
+      "serviceFee": 150,
+      "taxes": 100,
+      "discounts": 100
+    },
+    "cancellationPolicy": "moderate",
+    "specialRequests": "Late check-in requested",
+    "additionalServices": [
+      {
+        "service": "Airport Transfer",
+        "price": 50,
+        "quantity": 1
+      }
+    ]
+  }
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Should return booking data", function() {
+    expect(res.getBody().booking).to.be.an('object');
+  });
+  
+  test("Should have correct total price", function() {
+    expect(res.getBody().booking.totalPrice).to.equal(1250);
+  });
+  
+  test("Should have pending status", function() {
+    expect(res.getBody().booking.status).to.equal("pending");
+  });
+}
+
+script:post-response {
+  // Save booking ID for later use
+  bru.setEnvVar("bookingId", res.getBody().booking._id);
+}
