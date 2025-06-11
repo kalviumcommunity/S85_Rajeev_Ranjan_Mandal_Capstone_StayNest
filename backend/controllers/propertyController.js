@@ -64,28 +64,51 @@ const createProperty = async (req, res) => {
   }
 };
 
-// Update property by ID (only by the property owner)
+// Update property by ID (only by the property owner or admin)
 const updateProperty = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from JWT token
 
-    // First check if property exists and user is the owner
-    const existingProperty = await Property.findOne({
-      _id: req.params.id,
-      host: userId, // Only the host who owns the property can update it
-    });
-
-    if (!existingProperty) {
-      return res
-        .status(404)
-        .json({ message: "Property not found or access denied" });
+    // Get user to check role
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const updatedProperty = await Property.findByIdAndUpdate(
-      req.params.id,
+    // Build query conditions based on user role to prevent race conditions
+    let queryConditions;
+    if (user.role === "admin") {
+      // Admin can update any property
+      queryConditions = { _id: req.params.id };
+    } else {
+      // Regular users can only update their own properties
+      queryConditions = { _id: req.params.id, host: userId };
+    }
+
+    // Atomic operation: find and update in one operation to prevent race conditions
+    const updatedProperty = await Property.findOneAndUpdate(
+      queryConditions,
       req.body,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true,
+        // Ensure the document exists and matches our conditions
+        upsert: false,
+      }
     ).populate("host", "name email profilePicture");
+
+    if (!updatedProperty) {
+      // Check if property exists at all to provide better error message
+      const propertyExists = await Property.findById(req.params.id);
+      if (!propertyExists) {
+        return res.status(404).json({ message: "Property not found" });
+      } else {
+        return res.status(403).json({
+          message:
+            "Access denied. Only property owner or admin can update this property",
+        });
+      }
+    }
 
     res.status(200).json({
       message: "Property updated successfully",
