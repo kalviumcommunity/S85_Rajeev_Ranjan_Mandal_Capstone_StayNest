@@ -55,21 +55,33 @@ const createReview = async (req, res) => {
   }
 };
 
-// Update review by ID (only by the review author)
+// Update review by ID (only by the review author or admin)
 const updateReview = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from JWT token
 
-    // First check if review exists and user is the author
-    const existingReview = await Review.findOne({
-      _id: req.params.id,
-      guest: userId, // Only the guest who wrote the review can update it
-    });
+    // Get user to check role
+    const User = require("../models/User");
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    // Check if review exists
+    const existingReview = await Review.findById(req.params.id);
     if (!existingReview) {
-      return res
-        .status(404)
-        .json({ message: "Review not found or access denied" });
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    // Check if user is the author or admin
+    const isAuthor = existingReview.guest.toString() === userId;
+    const isAdmin = user.role === "admin";
+
+    if (!isAuthor && !isAdmin) {
+      return res.status(403).json({
+        message:
+          "Access denied. Only review author or admin can update this review",
+      });
     }
 
     const updatedReview = await Review.findByIdAndUpdate(
@@ -77,6 +89,10 @@ const updateReview = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     ).populate("property guest host booking");
+
+    if (!updatedReview) {
+      return res.status(404).json({ message: "Review not found after update" });
+    }
 
     res.status(200).json({
       message: "Review updated successfully",

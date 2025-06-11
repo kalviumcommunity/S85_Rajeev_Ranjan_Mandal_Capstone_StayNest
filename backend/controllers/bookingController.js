@@ -92,6 +92,12 @@ const updateBooking = async (req, res) => {
       .populate("guest", "name email profilePicture")
       .populate("host", "name email profilePicture");
 
+    if (!updatedBooking) {
+      return res
+        .status(404)
+        .json({ message: "Booking not found after update" });
+    }
+
     res.status(200).json({
       message: "Booking updated successfully",
       booking: updatedBooking,

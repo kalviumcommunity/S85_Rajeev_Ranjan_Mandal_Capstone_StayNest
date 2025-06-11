@@ -64,21 +64,32 @@ const createProperty = async (req, res) => {
   }
 };
 
-// Update property by ID (only by the property owner)
+// Update property by ID (only by the property owner or admin)
 const updateProperty = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from JWT token
 
-    // First check if property exists and user is the owner
-    const existingProperty = await Property.findOne({
-      _id: req.params.id,
-      host: userId, // Only the host who owns the property can update it
-    });
+    // Get user to check role
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    // Check if property exists
+    const existingProperty = await Property.findById(req.params.id);
     if (!existingProperty) {
-      return res
-        .status(404)
-        .json({ message: "Property not found or access denied" });
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    // Check if user is the owner or admin
+    const isOwner = existingProperty.host.toString() === userId;
+    const isAdmin = user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        message:
+          "Access denied. Only property owner or admin can update this property",
+      });
     }
 
     const updatedProperty = await Property.findByIdAndUpdate(
@@ -86,6 +97,12 @@ const updateProperty = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     ).populate("host", "name email profilePicture");
+
+    if (!updatedProperty) {
+      return res
+        .status(404)
+        .json({ message: "Property not found after update" });
+    }
 
     res.status(200).json({
       message: "Property updated successfully",
