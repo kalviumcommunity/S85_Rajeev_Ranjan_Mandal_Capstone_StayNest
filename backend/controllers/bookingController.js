@@ -7,16 +7,18 @@ const createBooking = async (req, res) => {
   try {
     const {
       propertyId,
-      guestId,
       hostId,
       checkIn,
       checkOut,
       guests,
+      totalPrice,
       priceBreakdown,
       cancellationPolicy,
       specialRequests,
       additionalServices,
     } = req.body;
+
+    const guestId = req.user.id; // Get guest ID from JWT token
 
     // Validate property exists
     const property = await Property.findById(propertyId);
@@ -24,7 +26,7 @@ const createBooking = async (req, res) => {
       return res.status(404).json({ message: "Property not found" });
     }
 
-    // Validate guest exists
+    // Validate guest exists (authenticated user)
     const guest = await User.findById(guestId);
     if (!guest) {
       return res.status(404).json({ message: "Guest not found" });
@@ -44,6 +46,7 @@ const createBooking = async (req, res) => {
       checkIn,
       checkOut,
       guests,
+      totalPrice,
       priceBreakdown,
       cancellationPolicy,
       specialRequests,
@@ -63,9 +66,23 @@ const createBooking = async (req, res) => {
     });
   }
 };
-// Update booking by ID
+// Update booking by ID (only if user is guest or host)
 const updateBooking = async (req, res) => {
   try {
+    const userId = req.user.id; // Get user ID from JWT token
+
+    // First check if booking exists and user has access
+    const existingBooking = await Booking.findOne({
+      _id: req.params.id,
+      $or: [{ guest: userId }, { host: userId }],
+    });
+
+    if (!existingBooking) {
+      return res
+        .status(404)
+        .json({ message: "Booking not found or access denied" });
+    }
+
     const updatedBooking = await Booking.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -74,10 +91,6 @@ const updateBooking = async (req, res) => {
       .populate("property")
       .populate("guest", "name email profilePicture")
       .populate("host", "name email profilePicture");
-
-    if (!updatedBooking) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
 
     res.status(200).json({
       message: "Booking updated successfully",
@@ -91,13 +104,19 @@ const updateBooking = async (req, res) => {
   }
 };
 
-// Get all bookings
+// Get all bookings for the authenticated user
 const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find()
+    const userId = req.user.id; // Get user ID from JWT token
+
+    // Find bookings where user is either guest or host
+    const bookings = await Booking.find({
+      $or: [{ guest: userId }, { host: userId }],
+    })
       .populate("property")
       .populate("guest", "name email profilePicture")
       .populate("host", "name email profilePicture");
+
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({
@@ -107,16 +126,25 @@ const getAllBookings = async (req, res) => {
   }
 };
 
-// Get booking by ID
+// Get booking by ID (only if user is guest or host)
 const getBookingById = async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id)
+    const userId = req.user.id; // Get user ID from JWT token
+
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      $or: [{ guest: userId }, { host: userId }],
+    })
       .populate("property")
       .populate("guest", "name email profilePicture")
       .populate("host", "name email profilePicture");
+
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res
+        .status(404)
+        .json({ message: "Booking not found or access denied" });
     }
+
     res.status(200).json(booking);
   } catch (error) {
     res.status(500).json({
@@ -132,4 +160,3 @@ module.exports = {
   getBookingById,
   updateBooking,
 };
-

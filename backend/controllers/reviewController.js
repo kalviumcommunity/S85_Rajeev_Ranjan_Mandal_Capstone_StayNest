@@ -1,17 +1,22 @@
 const Review = require("../models/Review");
 const Booking = require("../models/Booking");
-const Property = require("../models/Property");
-const User = require("../models/User");
 
 // Create a new review
 const createReview = async (req, res) => {
   try {
     const { bookingId, rating, comment, categories } = req.body;
+    const userId = req.user.id; // Get user ID from JWT token
 
-    // Validate booking exists
-    const booking = await Booking.findById(bookingId);
+    // Validate booking exists and user is the guest
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      guest: userId, // Only the guest can create a review
+    });
+
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res
+        .status(404)
+        .json({ message: "Booking not found or access denied" });
     }
 
     // Check if review already exists for this booking
@@ -26,7 +31,7 @@ const createReview = async (req, res) => {
     const review = new Review({
       booking: bookingId,
       property: booking.property,
-      guest: booking.guest,
+      guest: userId, // Use authenticated user ID
       host: booking.host,
       rating,
       comment,
@@ -50,18 +55,28 @@ const createReview = async (req, res) => {
   }
 };
 
-// Update review by ID
+// Update review by ID (only by the review author)
 const updateReview = async (req, res) => {
   try {
+    const userId = req.user.id; // Get user ID from JWT token
+
+    // First check if review exists and user is the author
+    const existingReview = await Review.findOne({
+      _id: req.params.id,
+      guest: userId, // Only the guest who wrote the review can update it
+    });
+
+    if (!existingReview) {
+      return res
+        .status(404)
+        .json({ message: "Review not found or access denied" });
+    }
+
     const updatedReview = await Review.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     ).populate("property guest host booking");
-
-    if (!updatedReview) {
-      return res.status(404).json({ message: "Review not found" });
-    }
 
     res.status(200).json({
       message: "Review updated successfully",
