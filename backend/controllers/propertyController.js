@@ -75,33 +75,39 @@ const updateProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if property exists
-    const existingProperty = await Property.findById(req.params.id);
-    if (!existingProperty) {
-      return res.status(404).json({ message: "Property not found" });
+    // Build query conditions based on user role to prevent race conditions
+    let queryConditions;
+    if (user.role === "admin") {
+      // Admin can update any property
+      queryConditions = { _id: req.params.id };
+    } else {
+      // Regular users can only update their own properties
+      queryConditions = { _id: req.params.id, host: userId };
     }
 
-    // Check if user is the owner or admin
-    const isOwner = existingProperty.host.toString() === userId;
-    const isAdmin = user.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        message:
-          "Access denied. Only property owner or admin can update this property",
-      });
-    }
-
-    const updatedProperty = await Property.findByIdAndUpdate(
-      req.params.id,
+    // Atomic operation: find and update in one operation to prevent race conditions
+    const updatedProperty = await Property.findOneAndUpdate(
+      queryConditions,
       req.body,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true,
+        // Ensure the document exists and matches our conditions
+        upsert: false,
+      }
     ).populate("host", "name email profilePicture");
 
     if (!updatedProperty) {
-      return res
-        .status(404)
-        .json({ message: "Property not found after update" });
+      // Check if property exists at all to provide better error message
+      const propertyExists = await Property.findById(req.params.id);
+      if (!propertyExists) {
+        return res.status(404).json({ message: "Property not found" });
+      } else {
+        return res.status(403).json({
+          message:
+            "Access denied. Only property owner or admin can update this property",
+        });
+      }
     }
 
     res.status(200).json({

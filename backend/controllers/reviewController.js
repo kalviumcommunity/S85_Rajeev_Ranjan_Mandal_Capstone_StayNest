@@ -1,5 +1,6 @@
 const Review = require("../models/Review");
 const Booking = require("../models/Booking");
+const User = require("../models/User");
 
 // Create a new review
 const createReview = async (req, res) => {
@@ -61,37 +62,44 @@ const updateReview = async (req, res) => {
     const userId = req.user.id; // Get user ID from JWT token
 
     // Get user to check role
-    const User = require("../models/User");
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if review exists
-    const existingReview = await Review.findById(req.params.id);
-    if (!existingReview) {
-      return res.status(404).json({ message: "Review not found" });
+    // Build query conditions based on user role to prevent race conditions
+    let queryConditions;
+    if (user.role === "admin") {
+      // Admin can update any review
+      queryConditions = { _id: req.params.id };
+    } else {
+      // Regular users can only update their own reviews
+      queryConditions = { _id: req.params.id, guest: userId };
     }
 
-    // Check if user is the author or admin
-    const isAuthor = existingReview.guest.toString() === userId;
-    const isAdmin = user.role === "admin";
-
-    if (!isAuthor && !isAdmin) {
-      return res.status(403).json({
-        message:
-          "Access denied. Only review author or admin can update this review",
-      });
-    }
-
-    const updatedReview = await Review.findByIdAndUpdate(
-      req.params.id,
+    // Atomic operation: find and update in one operation to prevent race conditions
+    const updatedReview = await Review.findOneAndUpdate(
+      queryConditions,
       req.body,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true,
+        // Ensure the document exists and matches our conditions
+        upsert: false,
+      }
     ).populate("property guest host booking");
 
     if (!updatedReview) {
-      return res.status(404).json({ message: "Review not found after update" });
+      // Check if review exists at all to provide better error message
+      const reviewExists = await Review.findById(req.params.id);
+      if (!reviewExists) {
+        return res.status(404).json({ message: "Review not found" });
+      } else {
+        return res.status(403).json({
+          message:
+            "Access denied. Only review author or admin can update this review",
+        });
+      }
     }
 
     res.status(200).json({

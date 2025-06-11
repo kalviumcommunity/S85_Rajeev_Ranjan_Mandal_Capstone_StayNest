@@ -71,31 +71,36 @@ const updateBooking = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from JWT token
 
-    // First check if booking exists and user has access
-    const existingBooking = await Booking.findOne({
-      _id: req.params.id,
-      $or: [{ guest: userId }, { host: userId }],
-    });
-
-    if (!existingBooking) {
-      return res
-        .status(404)
-        .json({ message: "Booking not found or access denied" });
-    }
-
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      req.params.id,
+    // Atomic operation: find and update in one operation to prevent race conditions
+    const updatedBooking = await Booking.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        $or: [{ guest: userId }, { host: userId }],
+      },
       req.body,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true,
+        // Ensure the document exists and matches our conditions
+        upsert: false,
+      }
     )
       .populate("property")
       .populate("guest", "name email profilePicture")
       .populate("host", "name email profilePicture");
 
     if (!updatedBooking) {
-      return res
-        .status(404)
-        .json({ message: "Booking not found after update" });
+      // Check if booking exists at all to provide better error message
+      const bookingExists = await Booking.findById(req.params.id);
+      if (!bookingExists) {
+        return res.status(404).json({ message: "Booking not found" });
+      } else {
+        return res
+          .status(403)
+          .json({
+            message: "Access denied. You can only update your own bookings",
+          });
+      }
     }
 
     res.status(200).json({
