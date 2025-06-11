@@ -6,7 +6,7 @@ meta {
 
 get {
   url: http://localhost:5000/api/wishlist/wishlist
-  body: json
+  body: none
   auth: bearer
 }
 
@@ -18,18 +18,12 @@ headers {
   Content-Type: application/json
 }
 
-body:json {
-  {
-    "userId": "{{currentUserId}}"
-  }
-}
-
 tests {
   test("Status should be 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-  
-  test("Should return array of properties", function() {
-    expect(res.getBody()).to.be.an('array');
+
+  test("Should return properties array", function() {
+    expect(res.getBody().properties).to.be.an('array');
   });
 }

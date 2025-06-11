@@ -7,7 +7,6 @@ const createProperty = async (req, res) => {
     const {
       title,
       description,
-      hostId,
       location,
       price,
       images,
@@ -20,10 +19,18 @@ const createProperty = async (req, res) => {
       cancellationPolicy,
     } = req.body;
 
-    // Validate host exists
+    const hostId = req.user.id; // Get host ID from JWT token
+
+    // Validate host exists and has host role
     const host = await User.findById(hostId);
     if (!host) {
       return res.status(404).json({ message: "Host not found" });
+    }
+
+    if (host.role !== "host" && host.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Only hosts can create properties" });
     }
 
     // Create new property
@@ -57,18 +64,28 @@ const createProperty = async (req, res) => {
   }
 };
 
-// Update property by ID
+// Update property by ID (only by the property owner)
 const updateProperty = async (req, res) => {
   try {
+    const userId = req.user.id; // Get user ID from JWT token
+
+    // First check if property exists and user is the owner
+    const existingProperty = await Property.findOne({
+      _id: req.params.id,
+      host: userId, // Only the host who owns the property can update it
+    });
+
+    if (!existingProperty) {
+      return res
+        .status(404)
+        .json({ message: "Property not found or access denied" });
+    }
+
     const updatedProperty = await Property.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     ).populate("host", "name email profilePicture");
-
-    if (!updatedProperty) {
-      return res.status(404).json({ message: "Property not found" });
-    }
 
     res.status(200).json({
       message: "Property updated successfully",
@@ -85,9 +102,10 @@ const updateProperty = async (req, res) => {
 // Get all properties
 const getAllProperties = async (req, res) => {
   try {
-    const properties = await Property.find()
-      .populate("host", "name email profilePicture")
-      .populate("reviews");
+    const properties = await Property.find().populate(
+      "host",
+      "name email profilePicture"
+    );
     res.status(200).json(properties);
   } catch (error) {
     res.status(500).json({
@@ -100,9 +118,10 @@ const getAllProperties = async (req, res) => {
 // Get property by ID
 const getPropertyById = async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id)
-      .populate("host", "name email profilePicture")
-      .populate("reviews");
+    const property = await Property.findById(req.params.id).populate(
+      "host",
+      "name email profilePicture"
+    );
     if (!property) {
       return res.status(404).json({ message: "Property not found" });
     }

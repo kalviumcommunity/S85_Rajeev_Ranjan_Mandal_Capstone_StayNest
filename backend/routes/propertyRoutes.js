@@ -1,17 +1,24 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { createProperty, getAllProperties, getPropertyById, updateProperty } = require('../controllers/propertyController');
+const {
+  createProperty,
+  getAllProperties,
+  getPropertyById,
+  updateProperty,
+} = require("../controllers/propertyController");
+const auth = require("../middleware/auth");
+
+// Public routes (anyone can view properties)
+router.get("/", getAllProperties);
+router.get("/:id", getPropertyById);
+
+// Protected routes (require authentication)
+router.use(auth);
 
 // Create a new property
-router.post('/', createProperty);
-
-// Get all properties
-router.get('/', getAllProperties);
-
-// Get property by ID
-router.get('/:id', getPropertyById);
+router.post("/", createProperty);
 
 // Update property by ID
-router.put('/:id', updateProperty);
+router.put("/:id", updateProperty);
 
-module.exports = router; 
+module.exports = router;

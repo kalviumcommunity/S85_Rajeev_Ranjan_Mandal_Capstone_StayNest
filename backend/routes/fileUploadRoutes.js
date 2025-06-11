@@ -1,8 +1,15 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { uploadSingleImage, handleImageUpload } = require('../controllers/fileUploadController');
+const {
+  uploadSingleImage,
+  handleImageUpload,
+} = require("../controllers/fileUploadController");
+const auth = require("../middleware/auth");
+
+// All file upload routes require authentication
+router.use(auth);
 
 // POST route for file upload
-router.post('/upload', uploadSingleImage, handleImageUpload);
+router.post("/upload", uploadSingleImage, handleImageUpload);
 
 module.exports = router;
