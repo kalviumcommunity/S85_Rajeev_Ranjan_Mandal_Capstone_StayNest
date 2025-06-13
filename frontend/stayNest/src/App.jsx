@@ -18,6 +18,7 @@ import Home from "./components/Home";
 import AddProperty from "./components/AddProperty";
 import EditProperty from "./components/EditProperty";
 import HostDashboard from "./components/HostDashboard";
+import AdminDashboard from "./components/AdminDashboard";
 import UserProfile from "./components/UserProfile";
 import Contact from "./components/Contact";
 import Support from "./components/Support";
@@ -144,6 +145,16 @@ function AppContent() {
             element={
               <PrivateRoute roles={["host", "admin"]}>
                 <EditProperty />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Admin Only Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute roles={["admin"]}>
+                <AdminDashboard />
               </PrivateRoute>
             }
           />

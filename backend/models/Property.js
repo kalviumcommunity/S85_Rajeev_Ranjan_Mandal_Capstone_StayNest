@@ -98,6 +98,28 @@ const propertySchema = new mongoose.Schema(
       enum: ["flexible", "moderate", "strict"],
       default: "moderate",
     },
+    // Admin fields
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    approvedAt: {
+      type: Date,
+    },
+    rejectionReason: {
+      type: String,
+    },
+    lastModifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    adminNotes: {
+      type: String,
+    },
   },
   {
     timestamps: true,
