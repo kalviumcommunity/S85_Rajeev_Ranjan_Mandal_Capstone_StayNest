@@ -1,4 +1,5 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const router = express.Router();
 const {
   register,
@@ -24,9 +25,21 @@ const {
   validateObjectId,
 } = require("../middleware/validation");
 
-// Public routes
-router.post("/register", validateUserRegistration, register);
-router.post("/login", validateUserLogin, login);
+// Rate limiter specifically for authentication operations
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 auth requests per windowMs
+  message: {
+    success: false,
+    message: "Too many authentication attempts, please try again later.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Public routes with auth rate limiting
+router.post("/register", authLimiter, validateUserRegistration, register);
+router.post("/login", authLimiter, validateUserLogin, login);
 router.post("/logout", logout);
 
 // Protected routes
