@@ -1,102 +1,119 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const propertySchema = new mongoose.Schema({
+const propertySchema = new mongoose.Schema(
+  {
     title: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     description: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     host: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     location: {
-        address: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        state: {
-            type: String,
-            required: true
-        },
-        country: {
-            type: String,
-            required: true
-        },
-        coordinates: {
-            latitude: Number,
-            longitude: Number
-        }
+      address: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+      country: {
+        type: String,
+        required: true,
+      },
+      coordinates: {
+        latitude: Number,
+        longitude: Number,
+      },
     },
     price: {
-        type: Number,
-        required: true,
-        min: 0
+      type: Number,
+      required: true,
+      min: 0,
     },
-    images: [{
+    images: [
+      {
         url: String,
-        public_id: String
-    }],
-    amenities: [{
-        type: String
-    }],
-    propertyType: {
+        public_id: String,
+      },
+    ],
+    amenities: [
+      {
         type: String,
-        enum: ['apartment', 'house', 'villa', 'cottage', 'other'],
-        required: true
+      },
+    ],
+    propertyType: {
+      type: String,
+      enum: ["apartment", "house", "villa", "cottage", "other"],
+      required: true,
     },
     bedrooms: {
-        type: Number,
-        required: true,
-        min: 0
+      type: Number,
+      required: true,
+      min: 0,
     },
     bathrooms: {
-        type: Number,
-        required: true,
-        min: 0
+      type: Number,
+      required: true,
+      min: 0,
     },
     maxGuests: {
-        type: Number,
-        required: true,
-        min: 1
+      type: Number,
+      required: true,
+      min: 1,
     },
     availability: {
-        type: Boolean,
-        default: true
+      type: Boolean,
+      default: true,
     },
     rating: {
-        average: {
-            type: Number,
-            default: 0
-        },
-        count: {
-            type: Number,
-            default: 0
-        }
+      average: {
+        type: Number,
+        default: 0,
+      },
+      count: {
+        type: Number,
+        default: 0,
+      },
     },
-    rules: [{
-        type: String
-    }],
-    cancellationPolicy: {
+    rules: [
+      {
         type: String,
-        enum: ['flexible', 'moderate', 'strict'],
-        default: 'moderate'
-    }
-}, {
-    timestamps: true
-});
+      },
+    ],
+    cancellationPolicy: {
+      type: String,
+      enum: ["flexible", "moderate", "strict"],
+      default: "moderate",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-// Index for location-based searches
-propertySchema.index({ 'location.coordinates': '2dsphere' });
+// Indexes for better query performance
+propertySchema.index({ "location.coordinates": "2dsphere" });
+propertySchema.index({ host: 1 });
+propertySchema.index({ propertyType: 1 });
+propertySchema.index({ price: 1 });
+propertySchema.index({ "rating.average": -1 });
+propertySchema.index({ availability: 1 });
+propertySchema.index({ "location.city": 1, "location.state": 1 });
+propertySchema.index({ createdAt: -1 });
+propertySchema.index({ amenities: 1 });
 
-const Property = mongoose.model('Property', propertySchema);
-module.exports = Property; 
+const Property = mongoose.model("Property", propertySchema);
+module.exports = Property;
