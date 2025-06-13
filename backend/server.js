@@ -49,16 +49,7 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 auth requests per windowMs
-  message: {
-    success: false,
-    message: "Too many authentication attempts, please try again later.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Auth rate limiter is now applied specifically in routes that need it
 
 // Apply rate limiting
 app.use(generalLimiter);
@@ -133,9 +124,9 @@ const supportRoutes = require("./routes/support");
 // Serve static files from uploads directory
 app.use("/uploads", express.static("uploads"));
 
-// Use routes with appropriate rate limiting
-app.use("/api/users", authLimiter, userRoutes);
-app.use("/api/auth", authLimiter, authRoutes);
+// Use routes (rate limiting is now applied specifically in routes that need it)
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/reviews", reviewRoutes);
@@ -149,8 +140,49 @@ app.get("/", (req, res) => {
 });
 
 // Global error handler (must be last middleware)
-const errorHandler = require("./middleware/errorHandler");
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+  console.error("Error:", err.message);
+
+  // Mongoose validation error
+  if (err.name === "ValidationError") {
+    const errors = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors,
+    });
+  }
+
+  // Mongoose cast error (invalid ObjectId)
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid ID format",
+    });
+  }
+
+  // JWT errors
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token",
+    });
+  }
+
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({
+      success: false,
+      message: "Token expired",
+    });
+  }
+
+  // Default error
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+  });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
@@ -158,17 +190,52 @@ const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Handle server shutdown gracefully
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received. Shutting down gracefully...");
-  server.close(() => {
-    console.log("Process terminated");
+// Graceful shutdown function
+const gracefulShutdown = (signal) => {
+  console.log(`${signal} received. Shutting down gracefully...`);
+
+  server.close(async () => {
+    console.log("HTTP server closed");
+
+    try {
+      await mongoose.connection.close();
+      console.log("MongoDB connection closed");
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      process.exit(1);
+    }
   });
+
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.error(
+      "Could not close connections in time, forcefully shutting down"
+    );
+    process.exit(1);
+  }, 10000);
+};
+
+// Handle shutdown signals
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err.message);
+  console.error(err.stack);
+  // Don't exit the process in production, just log the error
+  if (process.env.NODE_ENV === "development") {
+    gracefulShutdown("UNHANDLED_REJECTION");
+  }
 });
 
-process.on("SIGINT", () => {
-  console.log("SIGINT received. Shutting down gracefully...");
-  server.close(() => {
-    console.log("Process terminated");
-  });
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message);
+  console.error(err.stack);
+  // Don't exit the process in production, just log the error
+  if (process.env.NODE_ENV === "development") {
+    gracefulShutdown("UNCAUGHT_EXCEPTION");
+  }
 });

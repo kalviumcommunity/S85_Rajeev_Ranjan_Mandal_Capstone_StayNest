@@ -1,22 +1,28 @@
 # StayNest API Documentation
 
 ## Overview
+
 StayNest is a homestay booking platform API built with Node.js, Express, and MongoDB.
 
 ## Base URL
+
 - Development: `http://localhost:5000/api`
 - Production: `https://your-domain.com/api`
 
 ## Authentication
+
 The API uses JWT (JSON Web Tokens) for authentication. Include the token in the Authorization header:
+
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
 ## Response Format
+
 All API responses follow this standard format:
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -27,6 +33,7 @@ All API responses follow this standard format:
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -37,6 +44,7 @@ All API responses follow this standard format:
 ```
 
 ## Rate Limiting
+
 - General endpoints: 100 requests per 15 minutes
 - Authentication endpoints: 5 requests per 15 minutes
 - Support endpoints: 5 requests per 15 minutes
@@ -46,11 +54,13 @@ All API responses follow this standard format:
 ### Authentication
 
 #### Register User
+
 ```http
 POST /api/users/register
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "John Doe",
@@ -61,11 +71,13 @@ POST /api/users/register
 ```
 
 #### Login User
+
 ```http
 POST /api/users/login
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "john@example.com",
@@ -74,6 +86,7 @@ POST /api/users/login
 ```
 
 #### Google OAuth
+
 ```http
 GET /api/auth/google
 ```
@@ -81,11 +94,13 @@ GET /api/auth/google
 ### Properties
 
 #### Get All Properties
+
 ```http
 GET /api/properties
 ```
 
 **Query Parameters:**
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 10, max: 100)
 - `city` (optional): Filter by city
@@ -94,16 +109,19 @@ GET /api/properties
 - `maxPrice` (optional): Maximum price filter
 
 #### Get Property by ID
+
 ```http
 GET /api/properties/:id
 ```
 
 #### Create Property (Host only)
+
 ```http
 POST /api/properties
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "Beautiful Apartment",
@@ -126,11 +144,13 @@ POST /api/properties
 ### Bookings
 
 #### Create Booking
+
 ```http
 POST /api/bookings
 ```
 
 **Request Body:**
+
 ```json
 {
   "propertyId": "property_id_here",
@@ -145,6 +165,7 @@ POST /api/bookings
 ```
 
 #### Get User Bookings
+
 ```http
 GET /api/bookings
 ```
@@ -152,11 +173,13 @@ GET /api/bookings
 ### Reviews
 
 #### Create Review
+
 ```http
 POST /api/reviews
 ```
 
 **Request Body:**
+
 ```json
 {
   "bookingId": "booking_id_here",
@@ -176,11 +199,13 @@ POST /api/reviews
 ### Wishlist
 
 #### Add to Wishlist
+
 ```http
 POST /api/wishlist/wishlist
 ```
 
 **Request Body:**
+
 ```json
 {
   "propertyId": "property_id_here"
@@ -188,6 +213,7 @@ POST /api/wishlist/wishlist
 ```
 
 #### Get Wishlist
+
 ```http
 GET /api/wishlist/wishlist
 ```
@@ -195,6 +221,7 @@ GET /api/wishlist/wishlist
 ### File Upload
 
 #### Upload Image
+
 ```http
 POST /api/upload/image
 ```
@@ -204,11 +231,13 @@ POST /api/upload/image
 ### Support
 
 #### Submit Support Query
+
 ```http
 POST /api/support/query
 ```
 
 **Request Body:**
+
 ```json
 {
   "subject": "Booking Issue",
@@ -219,16 +248,16 @@ POST /api/support/query
 
 ## Error Codes
 
-| Code | Description |
-|------|-------------|
-| 400  | Bad Request - Invalid input data |
-| 401  | Unauthorized - Invalid or missing token |
-| 403  | Forbidden - Insufficient permissions |
-| 404  | Not Found - Resource doesn't exist |
-| 409  | Conflict - Resource already exists |
+| Code | Description                                |
+| ---- | ------------------------------------------ |
+| 400  | Bad Request - Invalid input data           |
+| 401  | Unauthorized - Invalid or missing token    |
+| 403  | Forbidden - Insufficient permissions       |
+| 404  | Not Found - Resource doesn't exist         |
+| 409  | Conflict - Resource already exists         |
 | 422  | Validation Error - Input validation failed |
-| 429  | Too Many Requests - Rate limit exceeded |
-| 500  | Internal Server Error |
+| 429  | Too Many Requests - Rate limit exceeded    |
+| 500  | Internal Server Error                      |
 
 ## Security Features
 
@@ -243,7 +272,9 @@ POST /api/support/query
 ## Development
 
 ### Environment Variables
+
 Create a `.env` file with the following variables:
+
 ```env
 NODE_ENV=development
 MONGO_URL=your_mongodb_connection_string
@@ -254,6 +285,7 @@ FRONTEND_URL=http://localhost:5173
 ```
 
 ### Running the Server
+
 ```bash
 npm run dev  # Development with nodemon
 npm start    # Production
