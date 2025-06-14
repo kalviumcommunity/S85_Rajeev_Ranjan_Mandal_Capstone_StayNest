@@ -11,6 +11,8 @@ import Register from "./components/Register";
 import Properties from "./components/Properties";
 import PropertyDetail from "./components/PropertyDetail";
 import BookingRequest from "./components/BookingRequest";
+import BookingSuccess from "./components/BookingSuccess";
+import UserBookings from "./components/UserBookings";
 import Review from "./components/Review";
 import Navbar from "./components/Navbar";
 import OAuthSuccess from "./components/OAuthSuccess";
@@ -98,7 +100,7 @@ function AppContent() {
             path="/bookings"
             element={
               <PrivateRoute>
-                <div className="max-w-6xl mx-auto">My Bookings</div>
+                <UserBookings />
               </PrivateRoute>
             }
           />
@@ -106,9 +108,23 @@ function AppContent() {
             path="/book/:propertyId"
             element={
               <PrivateRoute>
-                <div className="max-w-4xl mx-auto">
-                  <BookingRequest />
-                </div>
+                <BookingRequest />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/booking-success"
+            element={
+              <PrivateRoute>
+                <BookingSuccess />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/booking/:bookingId"
+            element={
+              <PrivateRoute>
+                <div className="max-w-4xl mx-auto">Booking Details</div>
               </PrivateRoute>
             }
           />

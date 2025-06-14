@@ -16,6 +16,8 @@ const createBooking = async (req, res) => {
       cancellationPolicy,
       specialRequests,
       additionalServices,
+      status,
+      payment,
     } = req.body;
 
     const guestId = req.user.id; // Get guest ID from JWT token
@@ -51,6 +53,12 @@ const createBooking = async (req, res) => {
       cancellationPolicy,
       specialRequests,
       additionalServices,
+      status: status || "pending",
+      payment: payment || {
+        status: "pending",
+        amount: totalPrice,
+        paymentMethod: "pay_on_arrival",
+      },
     });
 
     await booking.save();
@@ -95,11 +103,9 @@ const updateBooking = async (req, res) => {
       if (!bookingExists) {
         return res.status(404).json({ message: "Booking not found" });
       } else {
-        return res
-          .status(403)
-          .json({
-            message: "Access denied. You can only update your own bookings",
-          });
+        return res.status(403).json({
+          message: "Access denied. You can only update your own bookings",
+        });
       }
     }
 

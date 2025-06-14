@@ -1,70 +1,103 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const PropertyDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [error, setError] = useState(null);
 
-  // Mock property data - replace with API call later
-  const mockProperty = {
-    id: 1,
-    title: "Luxury Downtown Apartment",
-    location: "New York, NY",
-    price: 150,
-    rating: 4.8,
-    reviews: 124,
-    images: [
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    ],
-    type: "Apartment",
-    guests: 4,
-    bedrooms: 2,
-    bathrooms: 2,
-    amenities: [
-      "WiFi",
-      "Kitchen",
-      "Air Conditioning",
-      "Parking",
-      "Pool",
-      "Gym",
-      "Laundry",
-      "Balcony",
-    ],
-    host: {
-      name: "Sarah Johnson",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-      superhost: true,
-      joinedDate: "2020",
-      responseRate: "100%",
-      responseTime: "within an hour",
-    },
-    description:
-      "Experience luxury living in the heart of downtown! This stunning apartment offers modern amenities, breathtaking city views, and unparalleled convenience. Perfect for business travelers, couples, or small families looking for a premium stay.",
-    featured: true,
-    instantBook: true,
-    checkIn: "3:00 PM",
-    checkOut: "11:00 AM",
-    rules: [
-      "No smoking",
-      "No pets",
-      "No parties or events",
-      "Check-in is anytime after 3:00 PM",
-    ],
-  };
+  // Booking form state
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [infants, setInfants] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [nights, setNights] = useState(0);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setProperty(mockProperty);
-      setLoading(false);
-    }, 1000);
+    fetchProperty();
   }, [id]);
+
+  useEffect(() => {
+    calculatePrice();
+  }, [checkIn, checkOut, property]);
+
+  const fetchProperty = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/properties/${id}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Property not found");
+      }
+
+      const data = await response.json();
+      setProperty(data);
+    } catch (error) {
+      console.error("Error fetching property:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculatePrice = () => {
+    if (!checkIn || !checkOut || !property) return;
+
+    const startDate = new Date(checkIn);
+    const endDate = new Date(checkOut);
+    const timeDiff = endDate.getTime() - startDate.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    if (daysDiff > 0) {
+      setNights(daysDiff);
+      const basePrice = property.price * daysDiff;
+      const cleaningFee = 50; // Fixed cleaning fee
+      const serviceFee = Math.round(basePrice * 0.14); // 14% service fee
+      const taxes = Math.round(basePrice * 0.12); // 12% taxes
+
+      setTotalPrice(basePrice + cleaningFee + serviceFee + taxes);
+    }
+  };
+
+  const handleBooking = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (!checkIn || !checkOut) {
+      alert("Please select check-in and check-out dates");
+      return;
+    }
+
+    if (new Date(checkIn) >= new Date(checkOut)) {
+      alert("Check-out date must be after check-in date");
+      return;
+    }
+
+    // Navigate to booking page with property and booking details
+    navigate(`/book/${id}`, {
+      state: {
+        property,
+        bookingDetails: {
+          checkIn,
+          checkOut,
+          guests: { adults, children, infants },
+          totalPrice,
+          nights,
+        },
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -77,15 +110,17 @@ const PropertyDetail = () => {
     );
   }
 
-  if (!property) {
+  if (error || !property) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Property Not Found
+            {error || "Property Not Found"}
           </h2>
           <p className="text-gray-600 mb-6">
-            The property you're looking for doesn't exist.
+            {error === "Property not found"
+              ? "The property you're looking for doesn't exist."
+              : "There was an error loading the property details."}
           </p>
           <Link
             to="/properties"
@@ -132,11 +167,17 @@ const PropertyDetail = () => {
             {/* Main Image */}
             <div className="relative h-96 lg:h-[500px] rounded-xl overflow-hidden">
               <img
-                src={property.images[currentImageIndex]}
+                src={
+                  property.images && property.images.length > 0
+                    ? typeof property.images[currentImageIndex] === "string"
+                      ? property.images[currentImageIndex]
+                      : property.images[currentImageIndex]?.url
+                    : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                }
                 alt={property.title}
                 className="w-full h-full object-cover"
               />
-              {property.images.length > 1 && (
+              {property.images && property.images.length > 1 && (
                 <>
                   <button
                     onClick={() =>
@@ -188,21 +229,22 @@ const PropertyDetail = () => {
 
             {/* Thumbnail Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {property.images.slice(0, 4).map((image, index) => (
-                <div
-                  key={index}
-                  className={`relative h-44 lg:h-60 rounded-xl overflow-hidden cursor-pointer ${
-                    index === currentImageIndex ? "ring-2 ring-blue-500" : ""
-                  }`}
-                  onClick={() => setCurrentImageIndex(index)}
-                >
-                  <img
-                    src={image}
-                    alt={`${property.title} ${index + 1}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              ))}
+              {property.images &&
+                property.images.slice(0, 4).map((image, index) => (
+                  <div
+                    key={index}
+                    className={`relative h-44 lg:h-60 rounded-xl overflow-hidden cursor-pointer ${
+                      index === currentImageIndex ? "ring-2 ring-blue-500" : ""
+                    }`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <img
+                      src={typeof image === "string" ? image : image?.url}
+                      alt={`${property.title} ${index + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
             </div>
           </div>
         </div>
@@ -216,7 +258,14 @@ const PropertyDetail = () => {
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {property.title}
                   </h1>
-                  <p className="text-lg text-gray-600">{property.location}</p>
+                  <p className="text-lg text-gray-600">
+                    {property.location?.address ||
+                      property.location?.city ||
+                      "Location not specified"}
+                    {property.location?.city &&
+                      property.location?.state &&
+                      `, ${property.location.city}, ${property.location.state}`}
+                  </p>
                 </div>
                 <div className="flex items-center">
                   <svg
@@ -226,19 +275,23 @@ const PropertyDetail = () => {
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   <span className="ml-1 text-lg font-medium text-gray-900">
-                    {property.rating}
+                    {property.rating || "4.5"}
                   </span>
                   <span className="ml-1 text-gray-500">
-                    ({property.reviews} reviews)
+                    ({property.reviewCount || "0"} reviews)
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center space-x-6 text-gray-600 mb-6">
-                <span>{property.guests} guests</span>
-                <span>{property.bedrooms} bedrooms</span>
-                <span>{property.bathrooms} bathrooms</span>
-                <span>{property.type}</span>
+                <span>
+                  {property.maxGuests || property.guests || "2"} guests
+                </span>
+                <span>{property.bedrooms || "1"} bedrooms</span>
+                <span>{property.bathrooms || "1"} bathrooms</span>
+                <span>
+                  {property.propertyType || property.type || "Property"}
+                </span>
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
@@ -250,6 +303,11 @@ const PropertyDetail = () => {
                 {property.instantBook && (
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
                     Instant Book
+                  </span>
+                )}
+                {property.status === "approved" && (
+                  <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                    Verified
                   </span>
                 )}
               </div>
@@ -265,22 +323,28 @@ const PropertyDetail = () => {
                 Amenities
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {property.amenities.map((amenity, index) => (
-                  <div key={index} className="flex items-center">
-                    <svg
-                      className="w-5 h-5 text-green-500 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-gray-700">{amenity}</span>
-                  </div>
-                ))}
+                {property.amenities && property.amenities.length > 0 ? (
+                  property.amenities.map((amenity, index) => (
+                    <div key={index} className="flex items-center">
+                      <svg
+                        className="w-5 h-5 text-green-500 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-gray-700">{amenity}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 col-span-full">
+                    No amenities listed
+                  </p>
+                )}
               </div>
             </div>
 
@@ -294,33 +358,43 @@ const PropertyDetail = () => {
                   <span className="font-medium text-gray-700 w-20">
                     Check-in:
                   </span>
-                  <span className="text-gray-600">{property.checkIn}</span>
+                  <span className="text-gray-600">
+                    {property.checkIn || "3:00 PM"}
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <span className="font-medium text-gray-700 w-20">
                     Check-out:
                   </span>
-                  <span className="text-gray-600">{property.checkOut}</span>
+                  <span className="text-gray-600">
+                    {property.checkOut || "11:00 AM"}
+                  </span>
                 </div>
               </div>
-              <ul className="mt-4 space-y-2">
-                {property.rules.map((rule, index) => (
-                  <li key={index} className="flex items-center text-gray-700">
-                    <svg
-                      className="w-4 h-4 text-gray-400 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {rule}
-                  </li>
-                ))}
-              </ul>
+              {property.houseRules && property.houseRules.length > 0 ? (
+                <ul className="mt-4 space-y-2">
+                  {property.houseRules.map((rule, index) => (
+                    <li key={index} className="flex items-center text-gray-700">
+                      <svg
+                        className="w-4 h-4 text-gray-400 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {rule}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 text-gray-500">
+                  No specific house rules listed
+                </p>
+              )}
             </div>
           </div>
 
@@ -337,39 +411,174 @@ const PropertyDetail = () => {
                 </div>
               </div>
 
+              {/* Booking Form */}
+              <div className="space-y-4 mb-6">
+                {/* Check-in and Check-out */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Check-in
+                    </label>
+                    <input
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) => setCheckIn(e.target.value)}
+                      min={new Date().toISOString().split("T")[0]}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Check-out
+                    </label>
+                    <input
+                      type="date"
+                      value={checkOut}
+                      onChange={(e) => setCheckOut(e.target.value)}
+                      min={checkIn || new Date().toISOString().split("T")[0]}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Guests */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Guests
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-700">Adults</span>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setAdults(Math.max(1, adults - 1))}
+                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center">{adults}</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setAdults(
+                              Math.min(property.maxGuests || 10, adults + 1)
+                            )
+                          }
+                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-700">Children</span>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setChildren(Math.max(0, children - 1))}
+                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center">{children}</span>
+                        <button
+                          type="button"
+                          onClick={() => setChildren(children + 1)}
+                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-700">Infants</span>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setInfants(Math.max(0, infants - 1))}
+                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center">{infants}</span>
+                        <button
+                          type="button"
+                          onClick={() => setInfants(infants + 1)}
+                          className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Price Breakdown */}
+              {nights > 0 && (
+                <div className="border-t pt-4 mb-4">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>
+                        ${property.price} x {nights} nights
+                      </span>
+                      <span>${property.price * nights}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Cleaning fee</span>
+                      <span>$50</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Service fee</span>
+                      <span>${Math.round(property.price * nights * 0.14)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Taxes</span>
+                      <span>${Math.round(property.price * nights * 0.12)}</span>
+                    </div>
+                    <div className="border-t pt-2 flex justify-between font-semibold">
+                      <span>Total</span>
+                      <span>${totalPrice}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handleBooking}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4"
+              >
+                {user ? "Reserve" : "Login to Book"}
+              </button>
+
+              <div className="text-center text-sm text-gray-600">
+                Pay on arrival - No upfront payment required
+              </div>
+
               {/* Host Info */}
-              <div className="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center mt-6 p-4 bg-gray-50 rounded-lg">
                 <img
-                  src={property.host.avatar}
-                  alt={property.host.name}
+                  src={
+                    property.host?.profilePicture ||
+                    "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                  }
+                  alt={property.host?.name || "Host"}
                   className="w-12 h-12 rounded-full"
                 />
                 <div className="ml-3">
                   <div className="flex items-center">
                     <span className="font-medium text-gray-900">
-                      {property.host.name}
+                      {property.host?.name || "Host"}
                     </span>
-                    {property.host.superhost && (
-                      <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                        Superhost
-                      </span>
-                    )}
                   </div>
                   <div className="text-sm text-gray-600">
-                    Joined in {property.host.joinedDate}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {property.host.responseRate} response rate
+                    Host since{" "}
+                    {new Date(
+                      property.host?.createdAt || Date.now()
+                    ).getFullYear()}
                   </div>
                 </div>
-              </div>
-
-              <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4">
-                Book Now
-              </button>
-
-              <div className="text-center text-sm text-gray-600">
-                You won't be charged yet
               </div>
             </div>
           </div>

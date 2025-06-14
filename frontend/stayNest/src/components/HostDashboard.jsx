@@ -327,7 +327,7 @@ const HostDashboard = () => {
           ) : (
             <div className="divide-y divide-gray-200">
               {properties.map((property) => (
-                <div key={property.id} className="p-6">
+                <div key={property._id} className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <img
@@ -369,7 +369,7 @@ const HostDashboard = () => {
                       )}
 
                       <button
-                        onClick={() => toggleFeatured(property.id)}
+                        onClick={() => toggleFeatured(property._id)}
                         className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                           property.featured
                             ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
@@ -380,21 +380,21 @@ const HostDashboard = () => {
                       </button>
 
                       <Link
-                        to={`/property/${property.id}`}
+                        to={`/properties/${property._id}`}
                         className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-colors"
                       >
                         View
                       </Link>
 
                       <Link
-                        to={`/host/edit-property/${property.id}`}
+                        to={`/host/edit-property/${property._id}`}
                         className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-colors"
                       >
                         Edit
                       </Link>
 
                       <button
-                        onClick={() => deleteProperty(property.id)}
+                        onClick={() => deleteProperty(property._id)}
                         className="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full hover:bg-red-200 transition-colors"
                       >
                         Delete

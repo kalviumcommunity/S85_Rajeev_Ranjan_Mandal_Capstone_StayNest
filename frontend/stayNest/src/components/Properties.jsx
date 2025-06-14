@@ -15,124 +15,33 @@ const Properties = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock data - replace with API call later
-  const mockProperties = [
-    {
-      id: 1,
-      title: "Luxury Downtown Apartment",
-      location: "New York, NY",
-      price: 150,
-      rating: 4.8,
-      reviews: 124,
-      images: [
-        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
-      type: "Apartment",
-      guests: 4,
-      bedrooms: 2,
-      bathrooms: 2,
-      amenities: ["WiFi", "Kitchen", "Air Conditioning", "Parking", "Pool"],
-      host: {
-        name: "Sarah Johnson",
-        avatar:
-          "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-        superhost: true,
-      },
-      featured: true,
-      instantBook: true,
-    },
-    {
-      id: 2,
-      title: "Cozy Mountain Cabin",
-      location: "Aspen, CO",
-      price: 200,
-      rating: 4.9,
-      reviews: 89,
-      images: [
-        "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
-      type: "Cabin",
-      guests: 6,
-      bedrooms: 3,
-      bathrooms: 2,
-      amenities: ["WiFi", "Fireplace", "Hot Tub", "Mountain View", "Hiking"],
-      host: {
-        name: "Mike Chen",
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-        superhost: false,
-      },
-      featured: false,
-      instantBook: false,
-    },
-    {
-      id: 3,
-      title: "Beachfront Villa",
-      location: "Miami, FL",
-      price: 350,
-      rating: 4.7,
-      reviews: 203,
-      images: [
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
-      type: "Villa",
-      guests: 8,
-      bedrooms: 4,
-      bathrooms: 3,
-      amenities: [
-        "WiFi",
-        "Pool",
-        "Beach Access",
-        "Kitchen",
-        "Parking",
-        "Ocean View",
-      ],
-      host: {
-        name: "Elena Rodriguez",
-        avatar:
-          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-        superhost: true,
-      },
-      featured: true,
-      instantBook: true,
-    },
-    {
-      id: 4,
-      title: "Historic City Loft",
-      location: "Boston, MA",
-      price: 120,
-      rating: 4.6,
-      reviews: 156,
-      images: [
-        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      ],
-      type: "Loft",
-      guests: 2,
-      bedrooms: 1,
-      bathrooms: 1,
-      amenities: ["WiFi", "Kitchen", "Workspace", "Historic Building"],
-      host: {
-        name: "David Park",
-        avatar:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
-        superhost: false,
-      },
-      featured: false,
-      instantBook: true,
-    },
-  ];
+  // Fetch properties from API
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/properties`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch properties");
+      }
+
+      const data = await response.json();
+      setProperties(data);
+      setFilteredProperties(data);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      // Set empty array if API fails
+      setProperties([]);
+      setFilteredProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate API call - in production, this would fetch from your database
-    setTimeout(() => {
-      setProperties(mockProperties);
-      setFilteredProperties(mockProperties);
-      setLoading(false);
-    }, 1000);
+    fetchProperties();
   }, []);
 
   const handleFilterChange = (filterType, value) => {
@@ -144,13 +53,16 @@ const Properties = () => {
   const applyFilters = (currentFilters) => {
     let filtered = [...properties];
 
-    // Location filter
+    // Location filter - search in city, state, or address
     if (currentFilters.location) {
-      filtered = filtered.filter((property) =>
-        property.location
-          .toLowerCase()
-          .includes(currentFilters.location.toLowerCase())
-      );
+      filtered = filtered.filter((property) => {
+        const searchTerm = currentFilters.location.toLowerCase();
+        return (
+          property.location?.city?.toLowerCase().includes(searchTerm) ||
+          property.location?.state?.toLowerCase().includes(searchTerm) ||
+          property.location?.address?.toLowerCase().includes(searchTerm)
+        );
+      });
     }
 
     // Price range filter
@@ -165,14 +77,16 @@ const Properties = () => {
     // Property type filter
     if (currentFilters.propertyType) {
       filtered = filtered.filter(
-        (property) => property.type === currentFilters.propertyType
+        (property) =>
+          property.propertyType === currentFilters.propertyType.toLowerCase()
       );
     }
 
     // Rating filter
     if (currentFilters.rating) {
       filtered = filtered.filter(
-        (property) => property.rating >= parseFloat(currentFilters.rating)
+        (property) =>
+          (property.rating?.average || 0) >= parseFloat(currentFilters.rating)
       );
     }
 
@@ -185,11 +99,14 @@ const Properties = () => {
         filtered.sort((a, b) => b.price - a.price);
         break;
       case "rating":
-        filtered.sort((a, b) => b.rating - a.rating);
+        filtered.sort(
+          (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0)
+        );
         break;
       case "featured":
       default:
-        filtered.sort((a, b) => b.featured - a.featured);
+        // Sort by creation date (newest first) since we don't have featured field
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
     }
 
@@ -387,17 +304,31 @@ const Properties = () => {
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                   />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">
-                  No properties found
+                <h3 className="mt-2 text-lg font-medium text-gray-900">
+                  {properties.length === 0
+                    ? "No properties available yet"
+                    : "No properties found"}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Try adjusting your filters to see more results.
+                  {properties.length === 0
+                    ? "Be the first to list your property! Register as a host to get started."
+                    : "Try adjusting your filters to see more results."}
                 </p>
+                {properties.length === 0 && (
+                  <div className="mt-6">
+                    <Link
+                      to="/register"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Become a Host
+                    </Link>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredProperties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
+                  <PropertyCard key={property._id} property={property} />
                 ))}
               </div>
             )}
@@ -432,13 +363,19 @@ const PropertyCard = ({ property }) => {
       {/* Image Carousel */}
       <div className="relative h-64 overflow-hidden">
         <img
-          src={property.images[currentImageIndex]}
+          src={
+            property.images && property.images.length > 0
+              ? typeof property.images[currentImageIndex] === "string"
+                ? property.images[currentImageIndex]
+                : property.images[currentImageIndex]?.url
+              : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+          }
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
 
         {/* Image Navigation */}
-        {property.images.length > 1 && (
+        {property.images && property.images.length > 1 && (
           <>
             <button
               onClick={prevImage}
@@ -480,7 +417,7 @@ const PropertyCard = ({ property }) => {
         )}
 
         {/* Image Indicators */}
-        {property.images.length > 1 && (
+        {property.images && property.images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
             {property.images.map((_, index) => (
               <div
@@ -495,16 +432,14 @@ const PropertyCard = ({ property }) => {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col space-y-1">
-          {property.featured && (
-            <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-full">
-              Featured
-            </span>
-          )}
-          {property.instantBook && (
+          {property.isApproved && (
             <span className="bg-green-600 text-white text-xs font-medium px-2 py-1 rounded-full">
-              Instant Book
+              Verified
             </span>
           )}
+          <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-full capitalize">
+            {property.propertyType}
+          </span>
         </div>
 
         {/* Like Button */}
@@ -534,13 +469,15 @@ const PropertyCard = ({ property }) => {
       </div>
 
       {/* Property Details */}
-      <Link to={`/property/${property.id}`} className="block p-4">
+      <Link to={`/properties/${property._id}`} className="block p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
               {property.title}
             </h3>
-            <p className="text-sm text-gray-600">{property.location}</p>
+            <p className="text-sm text-gray-600">
+              {property.location?.city}, {property.location?.state}
+            </p>
           </div>
           <div className="flex items-center ml-2">
             <svg
@@ -550,17 +487,17 @@ const PropertyCard = ({ property }) => {
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
             <span className="ml-1 text-sm font-medium text-gray-900">
-              {property.rating}
+              {property.rating?.average?.toFixed(1) || "New"}
             </span>
             <span className="ml-1 text-sm text-gray-500">
-              ({property.reviews})
+              ({property.rating?.count || 0})
             </span>
           </div>
         </div>
 
         {/* Property Info */}
         <div className="flex items-center text-sm text-gray-600 mb-3">
-          <span>{property.guests} guests</span>
+          <span>{property.maxGuests} guests</span>
           <span className="mx-1">•</span>
           <span>{property.bedrooms} bedrooms</span>
           <span className="mx-1">•</span>
@@ -569,34 +506,43 @@ const PropertyCard = ({ property }) => {
 
         {/* Amenities */}
         <div className="flex flex-wrap gap-1 mb-3">
-          {property.amenities.slice(0, 3).map((amenity, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-            >
-              {amenity}
-            </span>
-          ))}
-          {property.amenities.length > 3 && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              +{property.amenities.length - 3} more
-            </span>
+          {property.amenities && property.amenities.length > 0 ? (
+            <>
+              {property.amenities.slice(0, 3).map((amenity, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                >
+                  {amenity}
+                </span>
+              ))}
+              {property.amenities.length > 3 && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  +{property.amenities.length - 3} more
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-xs text-gray-500">No amenities listed</span>
           )}
         </div>
 
         {/* Host Info */}
         <div className="flex items-center mb-3">
           <img
-            src={property.host.avatar}
-            alt={property.host.name}
+            src={
+              property.host?.profilePicture ||
+              "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+            }
+            alt={property.host?.name || "Host"}
             className="w-6 h-6 rounded-full"
           />
           <span className="ml-2 text-sm text-gray-600">
-            Hosted by {property.host.name}
+            Hosted by {property.host?.name || "Host"}
           </span>
-          {property.host.superhost && (
+          {property.host?.role === "admin" && (
             <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-              Superhost
+              Verified Host
             </span>
           )}
         </div>
