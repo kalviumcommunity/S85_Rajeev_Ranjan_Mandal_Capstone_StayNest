@@ -82,9 +82,15 @@ const Support = () => {
     },
     {
       category: "payments",
-      question: "What payment methods do you accept?",
+      question: "How does payment work?",
       answer:
-        "We accept major credit cards (Visa, Mastercard, American Express), debit cards, PayPal, Apple Pay, Google Pay, and bank transfers in supported regions. All payments are processed securely with 256-bit SSL encryption.",
+        "Bookings are confirmed instantly, and payment is made directly to the host upon arrival. You'll see the exact amount to pay in your booking confirmation. We accept cash and card payments at the property.",
+    },
+    {
+      category: "payments",
+      question: "When do I need to pay?",
+      answer:
+        "Payment is due upon arrival at the property. No upfront payment is required to confirm your booking. Simply bring the total amount shown in your booking confirmation (cash or card accepted).",
     },
     {
       category: "safety",

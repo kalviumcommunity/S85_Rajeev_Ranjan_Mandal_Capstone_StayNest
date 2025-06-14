@@ -90,11 +90,11 @@ const TermsOfService = () => {
       content: [
         {
           subtitle: "Booking Process",
-          text: "Bookings are confirmed when payment is successfully processed and both Host and Guest receive confirmation. All bookings are subject to Host acceptance and availability.",
+          text: "Bookings are confirmed instantly upon submission. Both Host and Guest receive confirmation notifications. All bookings are subject to Host acceptance and availability.",
         },
         {
-          subtitle: "Payment Processing",
-          text: "StayNest processes payments on behalf of Hosts. We charge a service fee for our platform services. Payment methods include credit cards, debit cards, and other approved payment systems.",
+          subtitle: "Payment Arrangements",
+          text: "Currently, payment arrangements are made directly between Guests and Hosts. StayNest facilitates the booking process but does not process payments. We're working on implementing secure payment processing in the future.",
         },
         {
           subtitle: "Cancellation Policies",
