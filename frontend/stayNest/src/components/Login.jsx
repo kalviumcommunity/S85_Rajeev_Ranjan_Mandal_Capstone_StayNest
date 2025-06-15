@@ -59,13 +59,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full relative">
         {/* Logo/Brand Section */}
         <div className="text-center mb-6">
@@ -87,7 +81,7 @@ const Login = () => {
           <h1 className="text-xl font-bold text-gray-900">StayNest</h1>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-8 sm:px-8 sm:py-10">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
@@ -147,7 +141,7 @@ const Login = () => {
                         errors.email
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                           : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
-                      } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-gray-50/50 focus:bg-white`}
+                      } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-white border-gray-200 focus:bg-white`}
                       placeholder="you@example.com"
                     />
                   </div>
@@ -202,7 +196,7 @@ const Login = () => {
                         errors.password
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                           : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
-                      } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-gray-50/50 focus:bg-white`}
+                      } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-white border-gray-200 focus:bg-white`}
                       placeholder="••••••••"
                     />
                   </div>
@@ -251,11 +245,11 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-8">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <>
@@ -302,12 +296,12 @@ const Login = () => {
                 </button>
               </div>
 
-              <div className="relative mt-6">
+              <div className="relative mt-8">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-white text-gray-500">
+                  <span className="px-4 bg-white text-gray-500">
                     Or continue with
                   </span>
                 </div>
@@ -322,16 +316,16 @@ const Login = () => {
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-white text-gray-500">
+                  <span className="px-4 bg-white text-gray-500">
                     Don't have an account?
                   </span>
                 </div>
               </div>
 
-              <div className="mt-4">
+              <div className="mt-6">
                 <Link
                   to="/register"
-                  className="group w-full flex justify-center py-3 px-4 border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="group w-full flex justify-center py-3.5 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Create an account
                   <svg

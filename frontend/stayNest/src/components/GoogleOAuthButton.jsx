@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const GoogleOAuthButton = ({ text = "Continue with Google" }) => {
   const handleGoogleLogin = () => {
@@ -8,8 +8,9 @@ const GoogleOAuthButton = ({ text = "Continue with Google" }) => {
 
   return (
     <button
+      type="button"
       onClick={handleGoogleLogin}
-      className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+      className="w-full flex items-center justify-center px-4 py-3.5 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
     >
       <svg
         className="w-5 h-5 mr-3"
