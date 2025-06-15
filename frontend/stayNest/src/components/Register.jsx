@@ -89,13 +89,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full relative">
         {/* Logo/Brand Section */}
         <div className="text-center mb-8">
@@ -117,7 +111,7 @@ const Register = () => {
           <h1 className="text-2xl font-bold text-gray-900">StayNest</h1>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-8 py-10 sm:px-10 sm:py-12">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
@@ -197,7 +191,7 @@ const Register = () => {
                         errors.name
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                           : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
-                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-gray-50/50 focus:bg-white`}
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-white border-gray-200 focus:bg-white`}
                       placeholder="John Doe"
                     />
                   </div>
@@ -249,7 +243,7 @@ const Register = () => {
                         errors.email
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                           : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
-                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-gray-50/50 focus:bg-white`}
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-white border-gray-200 focus:bg-white`}
                       placeholder="you@example.com"
                     />
                   </div>
@@ -304,7 +298,7 @@ const Register = () => {
                         errors.password
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                           : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
-                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-gray-50/50 focus:bg-white`}
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-white border-gray-200 focus:bg-white`}
                       placeholder="••••••••"
                     />
                   </div>
@@ -359,7 +353,7 @@ const Register = () => {
                         errors.confirmPassword
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                           : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
-                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-gray-50/50 focus:bg-white`}
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 sm:text-sm transition-all duration-200 bg-white border-gray-200 focus:bg-white`}
                       placeholder="••••••••"
                     />
                   </div>
