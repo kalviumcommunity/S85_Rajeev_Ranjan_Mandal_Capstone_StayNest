@@ -1,6 +1,7 @@
 const express = require("express");
 const passport = require("passport");
 const { generateToken } = require("../utils/jwtUtils");
+const User = require("../models/User");
 const router = express.Router();
 
 // @route   GET /api/auth/google
@@ -24,17 +25,12 @@ router.get(
   }),
   async (req, res) => {
     try {
-      console.log("OAuth callback received");
-      console.log("User from Google:", req.user);
-
       // Generate JWT token
       const token = generateToken(req.user._id);
-      console.log("JWT token generated:", token ? "Success" : "Failed");
 
       // Remove password from user object
       const userResponse = req.user.toObject();
       delete userResponse.password;
-      console.log("User response prepared:", userResponse);
 
       // Set HTTP-only cookie
       res.cookie("token", token, {
@@ -44,9 +40,25 @@ router.get(
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      // Redirect to frontend with success (only send token, fetch user data on frontend)
-      const redirectUrl = `${process.env.FRONTEND_URL}/auth/success?token=${token}`;
-      console.log("Redirecting to:", redirectUrl);
+      // Check if this is a new user who needs role selection
+      // New users will have the default role and no previous login
+      const isNewUser =
+        req.user.isNewUser ||
+        (req.user.role === "guest" && !req.user.lastLogin);
+
+      let redirectUrl;
+      if (isNewUser) {
+        // Redirect new users to role selection
+        redirectUrl = `${
+          process.env.FRONTEND_URL
+        }/auth/role-selection?token=${token}&name=${encodeURIComponent(
+          req.user.name
+        )}`;
+      } else {
+        // Existing users go directly to success page
+        redirectUrl = `${process.env.FRONTEND_URL}/auth/success?token=${token}`;
+      }
+
       res.redirect(redirectUrl);
     } catch (error) {
       console.error("OAuth callback error:", error);
@@ -90,6 +102,56 @@ router.get("/logout", (req, res) => {
     });
   }
 });
+
+// @route   PUT /api/auth/update-role
+// @desc    Update user role after OAuth registration
+// @access  Private
+router.put(
+  "/update-role",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { role } = req.body;
+
+      // Validate role
+      if (!role || !["guest", "host"].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid role. Must be 'guest' or 'host'",
+        });
+      }
+
+      // Update user role
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          role: role,
+          lastLogin: new Date(), // Mark as having completed setup
+        },
+        { new: true, runValidators: true }
+      ).select("-password");
+
+      if (!updatedUser) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: `Role updated to ${role} successfully`,
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error("Update role error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error updating user role",
+      });
+    }
+  }
+);
 
 // @route   GET /api/auth/current
 // @desc    Get current authenticated user

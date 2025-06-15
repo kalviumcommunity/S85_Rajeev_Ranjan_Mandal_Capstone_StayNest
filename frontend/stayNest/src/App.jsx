@@ -16,6 +16,7 @@ import UserBookings from "./components/UserBookings";
 import Review from "./components/Review";
 import Navbar from "./components/Navbar";
 import OAuthSuccess from "./components/OAuthSuccess";
+import OAuthRoleSelection from "./components/OAuthRoleSelection";
 import Home from "./components/Home";
 import AddProperty from "./components/AddProperty";
 import EditProperty from "./components/EditProperty";
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/properties" element={<Properties />} />
           <Route path="/properties/:id" element={<PropertyDetail />} />
           <Route path="/auth/success" element={<OAuthSuccess />} />
+          <Route path="/auth/role-selection" element={<OAuthRoleSelection />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/support" element={<Support />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

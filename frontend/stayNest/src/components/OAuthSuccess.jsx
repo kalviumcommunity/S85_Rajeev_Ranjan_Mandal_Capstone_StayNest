@@ -11,53 +11,38 @@ const OAuthSuccess = () => {
   useEffect(() => {
     // Prevent double processing in React StrictMode
     if (hasProcessed.current) {
-      console.log("OAuth already processed, skipping...");
       return;
     }
 
-    console.log("OAuthSuccess component mounted");
-    console.log("Current URL:", window.location.href);
-
     const token = searchParams.get("token");
-    console.log("Token from URL:", token ? "Found" : "Missing");
 
     if (token) {
       hasProcessed.current = true;
       const processOAuth = async () => {
         try {
-          console.log("Processing OAuth success...");
-
           // Store token in localStorage
           localStorage.setItem("token", token);
-          console.log("Token stored in localStorage");
 
           // Set axios default header
           const axios = (await import("axios")).default;
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-          console.log("Axios header set");
 
           // Fetch user data using the token
-          console.log("Fetching user data...");
           const response = await axios.get(
             `${import.meta.env.VITE_API_URL}/auth/current`
           );
 
           if (response.data.success) {
             const userData = response.data.user;
-            console.log("User data fetched:", userData);
 
             // Set user in context
             setUser(userData);
-            console.log("User set in context");
 
             // Show success message
             const successMessage = `Welcome ${userData.name}! You've successfully logged in with Google.`;
-            console.log("Success message:", successMessage);
 
             // Redirect to home page after a short delay
-            console.log("Setting timeout for redirect...");
             setTimeout(() => {
-              console.log("Redirecting to home page...");
               navigate("/", {
                 state: {
                   message: successMessage,
@@ -76,7 +61,6 @@ const OAuthSuccess = () => {
 
       processOAuth();
     } else {
-      console.log("Missing token parameter");
       navigate("/login?error=oauth_missing_token");
     }
   }, [searchParams, navigate, setUser]);

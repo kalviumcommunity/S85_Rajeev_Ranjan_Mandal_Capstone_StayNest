@@ -4,15 +4,6 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const User = require("../models/User");
 
-// Debug: Check if environment variables are loaded
-console.log("Google OAuth Config:");
-console.log("Client ID:", process.env.GOOGLE_CLIENT_ID ? "Found" : "Missing");
-console.log(
-  "Client Secret:",
-  process.env.GOOGLE_CLIENT_SECRET ? "Found" : "Missing"
-);
-console.log("Callback URL:", process.env.GOOGLE_CALLBACK_URL);
-
 // Google OAuth Strategy
 passport.use(
   new GoogleStrategy(
@@ -27,7 +18,9 @@ passport.use(
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
-          // User exists, return the user
+          // User exists, update last login and return the user
+          user.lastLogin = new Date();
+          await user.save();
           return done(null, user);
         }
 
@@ -38,6 +31,7 @@ passport.use(
           // User exists with same email, link Google account
           user.googleId = profile.id;
           user.profilePicture = profile.photos[0].value;
+          user.lastLogin = new Date();
           await user.save();
           return done(null, user);
         }
@@ -51,9 +45,14 @@ passport.use(
           role: "guest", // Default role
           isVerified: true, // Google accounts are considered verified
           authProvider: "google",
+          // Don't set lastLogin for new users - this will be used to detect new users
         });
 
         await user.save();
+
+        // Mark as new user for the callback
+        user.isNewUser = true;
+
         return done(null, user);
       } catch (error) {
         console.error("Google OAuth error:", error);
