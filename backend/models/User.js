@@ -48,6 +48,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    lastLogin: {
+      type: Date,
+    },
     hostDetails: {
       type: new mongoose.Schema(
         {

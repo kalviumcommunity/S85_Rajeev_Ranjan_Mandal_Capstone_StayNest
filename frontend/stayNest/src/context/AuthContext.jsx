@@ -142,6 +142,31 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  // Become a host (upgrade from guest to host)
+  const becomeHost = async () => {
+    try {
+      setError(null);
+      const { data } = await axios.put(`${API_URL}/users/become-host`);
+
+      if (data.success) {
+        setUser(data.user);
+        return { success: true, message: data.message };
+      } else {
+        throw new Error(data.message || "Failed to become a host");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to become a host";
+      setError(errorMessage);
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -155,6 +180,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         fetchUser, // Expose fetchUser to allow manual refresh of user data
         setUser: setUserData, // Expose setUser for OAuth success
+        becomeHost, // Expose becomeHost function
       }}
     >
       {children}
