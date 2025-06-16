@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PropertyImageUpload from "./PropertyImageUpload";
 
 const EditProperty = () => {
   const { id } = useParams();
@@ -118,26 +119,11 @@ const EditProperty = () => {
     }));
   };
 
-  const handleImageChange = (index, value) => {
-    const newImages = [...formData.images];
-    newImages[index] = value;
-    setFormData((prev) => ({ ...prev, images: newImages }));
-  };
-
-  const addImageField = () => {
-    if (formData.images.length < 4) {
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, ""],
-      }));
-    }
-  };
-
-  const removeImageField = (index) => {
-    if (formData.images.length > 1) {
-      const newImages = formData.images.filter((_, i) => i !== index);
-      setFormData((prev) => ({ ...prev, images: newImages }));
-    }
+  const handleImagesChange = (images) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: images,
+    }));
   };
 
   const handleRuleChange = (index, value) => {
@@ -404,6 +390,146 @@ const EditProperty = () => {
                   min="1"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="1"
+                />
+              </div>
+            </div>
+
+            {/* Property Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Property Type *
+              </label>
+              <select
+                name="propertyType"
+                value={formData.propertyType}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="apartment">Apartment</option>
+                <option value="house">House</option>
+                <option value="villa">Villa</option>
+                <option value="cottage">Cottage</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                Amenities
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {amenitiesList.map((amenity) => (
+                  <label
+                    key={amenity}
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                      formData.amenities.includes(amenity)
+                        ? "border-primary-500 bg-primary-50 text-primary-700"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.amenities.includes(amenity)}
+                      onChange={() => handleAmenityToggle(amenity)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-4 h-4 rounded border-2 mr-2 flex items-center justify-center ${
+                        formData.amenities.includes(amenity)
+                          ? "border-primary-500 bg-primary-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {formData.amenities.includes(amenity) && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-sm">{amenity}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Property Images */}
+            <div>
+              <PropertyImageUpload
+                images={formData.images}
+                onImagesChange={handleImagesChange}
+                maxImages={5}
+                required={true}
+              />
+            </div>
+
+            {/* House Rules */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                House Rules
+              </label>
+              <div className="space-y-3">
+                {formData.houseRules.map((rule, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={rule}
+                      onChange={(e) => handleRuleChange(index, e.target.value)}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="Enter a house rule..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeRuleField(index)}
+                      className="px-4 py-3 text-red-600 hover:text-red-700 border border-red-300 rounded-xl hover:bg-red-50 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addRuleField}
+                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors"
+                >
+                  + Add House Rule
+                </button>
+              </div>
+            </div>
+
+            {/* Check-in/Check-out Times */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Check-in Time
+                </label>
+                <input
+                  type="time"
+                  name="checkIn"
+                  value={formData.checkIn}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Check-out Time
+                </label>
+                <input
+                  type="time"
+                  name="checkOut"
+                  value={formData.checkOut}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
             </div>

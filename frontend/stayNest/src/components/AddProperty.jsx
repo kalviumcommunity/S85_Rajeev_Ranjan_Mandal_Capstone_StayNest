@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PropertyImageUpload from "./PropertyImageUpload";
 
 const AddProperty = () => {
   const navigate = useNavigate();
@@ -26,7 +27,6 @@ const AddProperty = () => {
 
   const [errors, setErrors] = useState({});
   const [newRule, setNewRule] = useState("");
-  const [imageUrls, setImageUrls] = useState(["", "", "", ""]);
 
   const propertyTypes = [
     "Apartment",
@@ -92,17 +92,19 @@ const AddProperty = () => {
     }));
   };
 
-  const handleImageUrlChange = (index, url) => {
-    const newImageUrls = [...imageUrls];
-    newImageUrls[index] = url;
-    setImageUrls(newImageUrls);
-
-    // Update formData with valid URLs
-    const validUrls = newImageUrls.filter((url) => url.trim() !== "");
+  const handleImagesChange = (images) => {
     setFormData((prev) => ({
       ...prev,
-      images: validUrls,
+      images: images,
     }));
+
+    // Clear image errors when images are updated
+    if (errors.images && images.length > 0) {
+      setErrors((prev) => ({
+        ...prev,
+        images: "",
+      }));
+    }
   };
 
   const addRule = () => {
@@ -505,49 +507,25 @@ const AddProperty = () => {
               Property Images
             </h3>
             <p className="text-gray-600 mb-4">
-              Add up to 4 high-quality images of your property
+              Upload high-quality images of your property to attract guests
             </p>
 
-            <div className="space-y-4">
-              {imageUrls.map((url, index) => (
-                <div key={index}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image {index + 1} URL {index === 0 ? "*" : "(Optional)"}
-                  </label>
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) =>
-                      handleImageUrlChange(index, e.target.value)
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {url && (
-                    <div className="mt-2">
-                      <img
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        className="w-32 h-24 object-cover rounded-lg border"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <PropertyImageUpload
+              images={formData.images}
+              onImagesChange={handleImagesChange}
+              maxImages={5}
+              required={true}
+            />
 
             {errors.images && (
               <p className="mt-2 text-sm text-red-600">{errors.images}</p>
             )}
 
-            <div className="p-4 bg-yellow-50 rounded-lg">
-              <p className="text-sm text-yellow-700">
-                <strong>Tip:</strong> Use high-quality images from Unsplash.com
-                for best results. Make sure URLs end with image extensions
-                (.jpg, .png, etc.)
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Tip:</strong> Upload clear, well-lit photos that
+                showcase your property's best features. The first image will be
+                used as the main photo.
               </p>
             </div>
           </div>
