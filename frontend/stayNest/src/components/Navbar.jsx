@@ -34,9 +34,16 @@ const Navbar = () => {
             <div className="flex-shrink-0 flex items-center">
               <Link
                 to="/"
-                className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition duration-200"
+                className="flex items-center space-x-4 hover:opacity-80 transition duration-200"
               >
-                StayNest
+                <img
+                  src="/stayNest_logo.png"
+                  alt="StayNest"
+                  className="h-12 w-auto"
+                />
+                <span className="text-2xl font-bold text-blue-600">
+                  StayNest
+                </span>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
