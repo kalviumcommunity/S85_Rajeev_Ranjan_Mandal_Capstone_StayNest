@@ -20,10 +20,24 @@ const bookingSchema = new mongoose.Schema(
     checkIn: {
       type: Date,
       required: true,
+      validate: {
+        validator: function (value) {
+          // Check if date is in the future
+          return value >= new Date();
+        },
+        message: "Check-in date must be in the future",
+      },
     },
     checkOut: {
       type: Date,
       required: true,
+      validate: {
+        validator: function (value) {
+          // Check if date is in the future and after check-in
+          return value >= new Date() && value > this.checkIn;
+        },
+        message: "Check-out date must be in the future and after check-in date",
+      },
     },
     guests: {
       adults: { type: Number, required: true, min: 1 },
@@ -130,6 +144,21 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
+// Validate minimum stay duration (at least 1 day)
+bookingSchema.pre("save", function (next) {
+  const checkInDate = new Date(this.checkIn);
+  const checkOutDate = new Date(this.checkOut);
+
+  // Calculate difference in milliseconds and convert to days
+  const diffTime = Math.abs(checkOutDate - checkInDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 1) {
+    return next(new Error("Booking must be for at least 1 day"));
+  }
+  next();
+});
+
 // Validate check-out date is after check-in date
 bookingSchema.pre("save", function (next) {
   if (this.checkOut <= this.checkIn) {
@@ -160,6 +189,11 @@ bookingSchema.pre("save", function (next) {
   }
   next();
 });
+
+// Add index for checking booking overlaps
+bookingSchema.index({ property: 1, checkIn: 1, checkOut: 1 });
+bookingSchema.index({ guest: 1, checkIn: 1, checkOut: 1 });
+bookingSchema.index({ status: 1 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
 module.exports = Booking;

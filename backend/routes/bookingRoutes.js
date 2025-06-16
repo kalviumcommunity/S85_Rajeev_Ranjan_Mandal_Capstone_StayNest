@@ -5,6 +5,7 @@ const {
   getAllBookings,
   getBookingById,
   updateBooking,
+  checkAvailability
 } = require("../controllers/bookingController");
 const auth = require("../middleware/auth");
 
@@ -17,6 +18,9 @@ router.post("/", createBooking);
 // Get all bookings
 router.get("/", getAllBookings);
 
+// Check property availability (must be placed before /:id route to avoid conflict)
+router.get("/check-availability", checkAvailability);
+
 // Get booking by ID
 router.get("/:id", getBookingById);
 
@@ -24,3 +28,4 @@ router.get("/:id", getBookingById);
 router.put("/:id", updateBooking);
 
 module.exports = router;
+
