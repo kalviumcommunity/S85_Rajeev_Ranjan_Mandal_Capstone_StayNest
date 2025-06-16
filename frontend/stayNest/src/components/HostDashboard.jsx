@@ -127,22 +127,31 @@ const HostDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-teal-600 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+            <div className="animate-fade-in-up">
+              <h1 className="text-4xl lg:text-5xl font-bold text-white">
                 Host Dashboard
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-3 text-lg text-white/90">
                 Manage your properties and track your performance
               </p>
             </div>
             <Link
               to="/host/add-property"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-2xl font-semibold hover:bg-white/30 transform hover:scale-105 transition-all duration-300 shadow-xl animate-fade-in-up"
+              style={{ animationDelay: "0.2s" }}
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -163,14 +172,17 @@ const HostDashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div
+            className="card-modern p-8 animate-fade-in-up"
+            style={{ animationDelay: "0.1s" }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl shadow-lg animate-glow">
                 <svg
-                  className="w-6 h-6 text-blue-600"
+                  className="w-7 h-7 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -183,22 +195,25 @@ const HostDashboard = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <div className="ml-5">
+                <p className="text-sm font-semibold text-gray-500">
                   Total Properties
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-3xl font-bold text-gray-900 mt-1">
                   {stats.totalProperties}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div
+            className="card-modern p-8 animate-fade-in-up"
+            style={{ animationDelay: "0.2s" }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg animate-glow">
                 <svg
-                  className="w-6 h-6 text-green-600"
+                  className="w-7 h-7 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -211,22 +226,25 @@ const HostDashboard = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <div className="ml-5">
+                <p className="text-sm font-semibold text-gray-500">
                   Total Bookings
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-3xl font-bold text-gray-900 mt-1">
                   {stats.totalBookings}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div
+            className="card-modern p-8 animate-fade-in-up"
+            style={{ animationDelay: "0.3s" }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl shadow-lg animate-glow">
                 <svg
-                  className="w-6 h-6 text-yellow-600"
+                  className="w-7 h-7 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -239,33 +257,36 @@ const HostDashboard = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <div className="ml-5">
+                <p className="text-sm font-semibold text-gray-500">
                   Total Revenue
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-3xl font-bold text-gray-900 mt-1">
                   ${stats.totalRevenue.toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div
+            className="card-modern p-8 animate-fade-in-up"
+            style={{ animationDelay: "0.4s" }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-lg animate-glow">
                 <svg
-                  className="w-6 h-6 text-purple-600"
+                  className="w-7 h-7 text-white"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <div className="ml-5">
+                <p className="text-sm font-semibold text-gray-500">
                   Average Rating
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-3xl font-bold text-gray-900 mt-1">
                   {stats.averageRating}
                 </p>
               </div>
@@ -274,9 +295,12 @@ const HostDashboard = () => {
         </div>
 
         {/* Properties List */}
-        <div className="bg-white rounded-xl shadow-sm border">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
+        <div
+          className="card-modern animate-fade-in-up"
+          style={{ animationDelay: "0.5s" }}
+        >
+          <div className="px-8 py-6 border-b border-gray-200/50">
+            <h2 className="text-2xl font-bold text-gray-900">
               Your Properties
             </h2>
           </div>
@@ -305,7 +329,7 @@ const HostDashboard = () => {
               <div className="mt-6">
                 <Link
                   to="/host/add-property"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-glow"
                 >
                   <svg
                     className="w-5 h-5 mr-2"

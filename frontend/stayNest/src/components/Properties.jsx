@@ -125,16 +125,24 @@ const Properties = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-teal-600 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+            <div className="animate-fade-in-up">
+              <h1 className="text-4xl lg:text-5xl font-bold text-white">
                 Find Your Perfect Stay
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-3 text-lg text-white/90">
                 {filteredProperties.length} properties available
               </p>
             </div>
@@ -142,7 +150,8 @@ const Properties = () => {
             {/* Mobile Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="lg:hidden mt-6 inline-flex items-center px-6 py-3 glass border border-white/30 rounded-2xl text-sm font-semibold text-white hover:bg-white/20 transform hover:scale-105 transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: "0.2s" }}
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -171,10 +180,11 @@ const Properties = () => {
               showFilters ? "block" : "hidden lg:block"
             }`}
           >
-            <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Filters
-              </h3>
+            <div
+              className="card-modern p-8 sticky top-6 animate-fade-in-up"
+              style={{ animationDelay: "0.3s" }}
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Filters</h3>
 
               {/* Location Filter */}
               <div className="mb-6">
@@ -359,7 +369,7 @@ const PropertyCard = ({ property }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
+    <div className="card-modern overflow-hidden group animate-fade-in-up">
       {/* Image Carousel */}
       <div className="relative h-64 overflow-hidden">
         <img
@@ -555,7 +565,7 @@ const PropertyCard = ({ property }) => {
             </span>
             <span className="text-sm text-gray-600"> / night</span>
           </div>
-          <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold rounded-2xl hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-glow">
             View Details
           </button>
         </div>
