@@ -55,7 +55,7 @@ const BookingRequest = () => {
       ...prev,
       priceBreakdown: {
         basePrice,
-        cleaningFee: 50,
+        cleaningFee: 500,
         serviceFee,
         taxes,
         discounts: 0,
@@ -397,26 +397,26 @@ const BookingRequest = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span>
-                    ${property.price} x {bookingDetails.nights} nights
+                    ₹{property.price} x {bookingDetails.nights} nights
                   </span>
-                  <span>${formData.priceBreakdown.basePrice}</span>
+                  <span>₹{formData.priceBreakdown.basePrice}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Cleaning fee</span>
-                  <span>${formData.priceBreakdown.cleaningFee}</span>
+                  <span>₹{formData.priceBreakdown.cleaningFee}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Service fee</span>
-                  <span>${formData.priceBreakdown.serviceFee}</span>
+                  <span>₹{formData.priceBreakdown.serviceFee}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Taxes</span>
-                  <span>${formData.priceBreakdown.taxes}</span>
+                  <span>₹{formData.priceBreakdown.taxes}</span>
                 </div>
                 {formData.priceBreakdown.discounts > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discounts</span>
-                    <span>-${formData.priceBreakdown.discounts}</span>
+                    <span>-₹{formData.priceBreakdown.discounts}</span>
                   </div>
                 )}
               </div>
