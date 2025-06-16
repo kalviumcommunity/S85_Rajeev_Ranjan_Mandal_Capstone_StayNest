@@ -59,7 +59,7 @@ const bookingSchema = new mongoose.Schema(
         default: "pending",
       },
       amount: Number,
-      currency: { type: String, default: "USD" },
+      currency: { type: String, default: "INR" },
       paymentMethod: String,
       transactionId: String,
       paymentDate: Date,

@@ -237,7 +237,7 @@ const UserBookings = () => {
                         </span>
                       </div>
                       <p className="mt-2 text-lg font-semibold text-gray-900">
-                        ${booking.totalPrice}
+                        ₹{booking.totalPrice}
                       </p>
                     </div>
                   </div>

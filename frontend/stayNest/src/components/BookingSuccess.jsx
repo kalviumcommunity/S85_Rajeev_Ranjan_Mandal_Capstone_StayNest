@@ -69,7 +69,7 @@ const BookingSuccess = () => {
                 />
               </svg>
               <p className="text-amber-800 font-medium">
-                Payment Required: ${booking.totalPrice} to be paid on arrival
+                Payment Required: ₹{booking.totalPrice} to be paid on arrival
               </p>
             </div>
           </div>
@@ -112,7 +112,7 @@ const BookingSuccess = () => {
               <div>
                 <p className="text-sm text-gray-600">Total Amount</p>
                 <p className="font-medium text-blue-600">
-                  ${booking.totalPrice}
+                  ₹{booking.totalPrice}
                 </p>
               </div>
               <div>
@@ -147,7 +147,7 @@ const BookingSuccess = () => {
               <li>
                 •{" "}
                 <strong>
-                  Bring ${booking.totalPrice} cash/card for payment on arrival
+                  Bring ₹{booking.totalPrice} cash/card for payment on arrival
                 </strong>
               </li>
               <li>• You can view and manage this booking in "My Bookings"</li>

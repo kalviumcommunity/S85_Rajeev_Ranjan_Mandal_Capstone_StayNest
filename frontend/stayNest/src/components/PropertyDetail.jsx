@@ -60,7 +60,7 @@ const PropertyDetail = () => {
     if (daysDiff > 0) {
       setNights(daysDiff);
       const basePrice = property.price * daysDiff;
-      const cleaningFee = 50; // Fixed cleaning fee
+      const cleaningFee = 500; // Fixed cleaning fee
       const serviceFee = Math.round(basePrice * 0.14); // 14% service fee
       const taxes = Math.round(basePrice * 0.12); // 12% taxes
 
@@ -403,7 +403,7 @@ const PropertyDetail = () => {
             <div className="bg-white rounded-xl shadow-lg border p-6 sticky top-6">
               <div className="text-center mb-6">
                 <div className="text-3xl font-bold text-gray-900">
-                  ${property.price}
+                  ₹{property.price}
                   <span className="text-lg font-normal text-gray-600">
                     {" "}
                     / night
@@ -521,25 +521,25 @@ const PropertyDetail = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>
-                        ${property.price} x {nights} nights
+                        ₹{property.price} x {nights} nights
                       </span>
-                      <span>${property.price * nights}</span>
+                      <span>₹{property.price * nights}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Cleaning fee</span>
-                      <span>$50</span>
+                      <span>₹500</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Service fee</span>
-                      <span>${Math.round(property.price * nights * 0.14)}</span>
+                      <span>₹{Math.round(property.price * nights * 0.14)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Taxes</span>
-                      <span>${Math.round(property.price * nights * 0.12)}</span>
+                      <span>₹{Math.round(property.price * nights * 0.12)}</span>
                     </div>
                     <div className="border-t pt-2 flex justify-between font-semibold">
                       <span>Total</span>
-                      <span>${totalPrice}</span>
+                      <span>₹{totalPrice}</span>
                     </div>
                   </div>
                 </div>
