@@ -289,25 +289,39 @@ const Support = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-teal-600 overflow-hidden py-20">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 animate-fade-in-up">
             Support Center
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p
+            className="text-xl text-white/90 max-w-3xl mx-auto animate-fade-in-up"
+            style={{ animationDelay: "0.2s" }}
+          >
             Find answers to common questions or get in touch with our support
             team
           </p>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Support Options */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {supportOptions.map((option, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow"
+              className="card-modern p-8 animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div
                 className={`w-12 h-12 ${option.color} rounded-lg flex items-center justify-center text-white text-2xl mb-4`}
@@ -334,7 +348,11 @@ const Support = () => {
         </div>
 
         {/* FAQ Section */}
-        <div id="faq-section" className="bg-white rounded-2xl shadow-lg p-8">
+        <div
+          id="faq-section"
+          className="card-modern p-10 animate-fade-in-up"
+          style={{ animationDelay: "0.5s" }}
+        >
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Frequently Asked Questions
           </h2>
@@ -411,24 +429,30 @@ const Support = () => {
         </div>
 
         {/* Contact CTA */}
-        <div className="mt-12 bg-blue-600 rounded-2xl p-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            Still need help?
-          </h2>
-          <p className="text-blue-100 mb-6">
-            Can't find what you're looking for? Our support team is here to help
-            you 24/7.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/contact"
-              className="bg-white text-blue-600 py-3 px-6 rounded-xl font-medium hover:bg-blue-50 transition-colors"
-            >
-              Contact Support
-            </Link>
-            <button className="bg-blue-700 text-white py-3 px-6 rounded-xl font-medium hover:bg-blue-800 transition-colors">
-              Start Live Chat
-            </button>
+        <div
+          className="mt-16 bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 rounded-3xl p-10 text-center relative overflow-hidden animate-fade-in-up"
+          style={{ animationDelay: "0.7s" }}
+        >
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative">
+            <h2 className="text-3xl font-bold text-white mb-6">
+              Still need help?
+            </h2>
+            <p className="text-white/90 mb-8 text-lg">
+              Can't find what you're looking for? Our support team is here to
+              help you 24/7.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/contact"
+                className="bg-white text-blue-600 py-4 px-8 rounded-2xl font-semibold hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-lg"
+              >
+                Contact Support
+              </Link>
+              <button className="glass border border-white/30 text-white py-4 px-8 rounded-2xl font-semibold hover:bg-white/20 transform hover:scale-105 transition-all duration-300">
+                Start Live Chat
+              </button>
+            </div>
           </div>
         </div>
 

@@ -199,13 +199,21 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-teal-600 overflow-hidden py-16">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-primary-600 hover:text-primary-700 mb-4"
+            className="flex items-center glass text-white hover:bg-white/20 px-4 py-2 rounded-2xl mb-6 transform hover:scale-105 transition-all duration-300 animate-fade-in-up"
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -222,34 +230,98 @@ const UserProfile = () => {
             </svg>
             Back
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-        </div>
 
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-md rounded-full mb-6 animate-fade-in-up">
+              <svg
+                className="w-10 h-10 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <h1
+              className="text-4xl lg:text-5xl font-bold text-white mb-4 animate-fade-in-up"
+              style={{ animationDelay: "0.2s" }}
+            >
+              My Profile
+            </h1>
+            <p
+              className="text-lg text-white/90 animate-fade-in-up"
+              style={{ animationDelay: "0.3s" }}
+            >
+              Manage your account settings and preferences
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
-            {success}
+          <div className="mb-8 p-6 glass bg-emerald-50/80 border border-emerald-200/50 rounded-2xl text-emerald-700 shadow-lg animate-fade-in-up">
+            <div className="flex items-center">
+              <svg
+                className="w-5 h-5 mr-3 text-emerald-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {success}
+            </div>
           </div>
         )}
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-            {error}
+          <div className="mb-8 p-6 glass bg-red-50/80 border border-red-200/50 rounded-2xl text-red-700 shadow-lg animate-fade-in-up">
+            <div className="flex items-center">
+              <svg
+                className="w-5 h-5 mr-3 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {error}
+            </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Info */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
+            <div
+              className="card-modern p-10 animate-fade-in-up"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">
                   Profile Information
                 </h2>
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="text-primary-600 hover:text-primary-700 font-medium"
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
                   >
                     Edit Profile
                   </button>
@@ -257,9 +329,9 @@ const UserProfile = () => {
               </div>
 
               {isEditing ? (
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                <form onSubmit={handleUpdateProfile} className="space-y-8">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Full Name
                     </label>
                     <input
@@ -268,12 +340,12 @@ const UserProfile = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Email Address
                     </label>
                     <input
@@ -282,12 +354,12 @@ const UserProfile = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Phone Number
                     </label>
                     <input
@@ -295,7 +367,7 @@ const UserProfile = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
                     />
                   </div>
 
@@ -310,13 +382,39 @@ const UserProfile = () => {
                     disabled={isSubmitting}
                   />
 
-                  <div className="flex space-x-4">
+                  <div className="flex space-x-4 pt-4">
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex-1 bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-8 rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-glow"
                     >
-                      {isSubmitting ? "Updating..." : "Update Profile"}
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Updating...
+                        </div>
+                      ) : (
+                        "Update Profile"
+                      )}
                     </button>
                     <button
                       type="button"
@@ -329,28 +427,61 @@ const UserProfile = () => {
                           profilePicture: user.profilePicture || "",
                         });
                       }}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                      className="px-8 py-4 glass border border-gray-200 text-gray-700 rounded-2xl font-semibold hover:bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg"
                     >
                       Cancel
                     </button>
                   </div>
                 </form>
               ) : (
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={
-                        user.profilePicture ||
-                        "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
-                      }
-                      alt={user.name}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
+                <div className="space-y-8">
+                  <div className="flex items-center space-x-6">
+                    <div className="relative">
+                      <img
+                        src={
+                          user.profilePicture ||
+                          "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                        }
+                        alt={user.name}
+                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-2xl font-bold text-gray-900">
                         {user.name}
                       </h3>
-                      <p className="text-sm text-gray-600">{user.role}</p>
+                      <div className="flex items-center mt-2">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-800"
+                              : user.role === "host"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {user.role === "admin"
+                            ? "👑 Admin"
+                            : user.role === "host"
+                            ? "🏠 Host"
+                            : "👤 Guest"}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -398,19 +529,37 @@ const UserProfile = () => {
           </div>
 
           {/* Account Actions */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Change Password */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Security
-              </h3>
+            <div
+              className="card-modern p-8 animate-fade-in-up"
+              style={{ animationDelay: "0.5s" }}
+            >
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mr-4">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Security</h3>
+              </div>
 
               {!showPasswordForm ? (
                 <button
                   onClick={() => setShowPasswordForm(true)}
-                  className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  className="w-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 py-4 px-6 rounded-2xl font-semibold hover:from-gray-200 hover:to-gray-300 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg"
                 >
-                  Change Password
+                  🔑 Change Password
                 </button>
               ) : (
                 <form onSubmit={handleUpdatePassword} className="space-y-4">
@@ -486,19 +635,37 @@ const UserProfile = () => {
             </div>
 
             {/* Delete Account */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Danger Zone
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
+            <div
+              className="card-modern p-8 border-red-200/50 animate-fade-in-up"
+              style={{ animationDelay: "0.6s" }}
+            >
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-2xl flex items-center justify-center mr-4">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-red-600">Danger Zone</h3>
+              </div>
+              <p className="text-gray-600 mb-6 leading-relaxed">
                 Once you delete your account, there is no going back. Please be
                 certain.
               </p>
               <button
                 onClick={handleDeleteAccount}
-                className="w-full bg-red-600 text-white py-3 px-4 rounded-xl font-medium hover:bg-red-700 transition-colors"
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 rounded-2xl font-semibold hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                Delete Account
+                ⚠️ Delete Account
               </button>
             </div>
           </div>

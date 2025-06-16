@@ -114,12 +114,12 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Success Toast */}
       {showSuccessToast && (
-        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in">
+        <div className="fixed top-4 right-4 z-50 glass rounded-2xl px-6 py-4 shadow-2xl flex items-center space-x-3 animate-slide-in border border-emerald-200/50 bg-gradient-to-r from-emerald-500/90 to-teal-500/90 text-white backdrop-blur-lg">
           <svg
-            className="w-6 h-6 text-white"
+            className="w-6 h-6 text-white animate-glow"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -131,10 +131,10 @@ const Home = () => {
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span className="font-medium">{successMessage}</span>
+          <span className="font-semibold">{successMessage}</span>
           <button
             onClick={() => setShowSuccessToast(false)}
-            className="ml-4 text-white hover:text-gray-200"
+            className="ml-4 text-white/80 hover:text-white transition-colors duration-200 hover:scale-110 transform"
           >
             <svg
               className="w-4 h-4"
@@ -153,7 +153,7 @@ const Home = () => {
         </div>
       )}
       {/* Announcement Banner */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 text-center">
+      <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white p-4 text-center relative overflow-hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-center space-x-2">
           <svg
             className="w-5 h-5 text-white"
@@ -176,15 +176,19 @@ const Home = () => {
         </div>
       </div>
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-indigo-700/90"></div>
+      <div className="relative bg-mesh overflow-hidden">
+        {/* Enhanced Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-purple-600/70 to-teal-600/80"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
 
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-float"></div>
+          <div
+            className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-teal-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float"
+            style={{ animationDelay: "3s" }}
+          ></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
@@ -197,27 +201,33 @@ const Home = () => {
                 </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight animate-fade-in-up">
                 Find your perfect
-                <span className="block bg-gradient-to-r from-blue-200 to-indigo-200 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-cyan-200 via-blue-200 to-purple-200 bg-clip-text text-transparent font-black">
                   homestay experience
                 </span>
               </h1>
 
-              <p className="mt-4 text-base sm:text-lg text-blue-100 max-w-xl leading-relaxed">
+              <p
+                className="mt-6 text-base sm:text-lg text-white/90 max-w-xl leading-relaxed animate-fade-in-up"
+                style={{ animationDelay: "0.2s" }}
+              >
                 Discover handpicked properties from verified hosts worldwide.
                 From cozy apartments to luxury villas - find your perfect home
                 away from home with instant booking and 24/7 support.
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 lg:justify-start justify-center">
+              <div
+                className="mt-10 flex flex-col sm:flex-row gap-4 lg:justify-start justify-center animate-fade-in-up"
+                style={{ animationDelay: "0.4s" }}
+              >
                 <Link
                   to="/properties"
-                  className="group inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-lg text-white bg-primary-600 hover:bg-primary-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="group inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-2xl text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25 animate-glow"
                 >
                   <span>Explore Stays</span>
                   <svg
-                    className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
+                    className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -233,7 +243,7 @@ const Home = () => {
                 <button
                   onClick={handleBecomeHost}
                   disabled={isBecomingHost}
-                  className="group inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-lg text-primary-700 bg-white hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="group inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-2xl glass text-white border border-white/30 hover:border-white/50 hover:bg-white/20 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none backdrop-blur-md"
                 >
                   {isBecomingHost ? (
                     <>
@@ -330,7 +340,7 @@ const Home = () => {
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-black/20 to-transparent"></div>
 
                 {/* Floating Cards */}
-                <div className="absolute -bottom-3 -left-3 bg-white rounded-lg p-3 shadow-xl">
+                <div className="absolute -bottom-3 -left-3 glass bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-white/20 animate-float">
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                       <svg
@@ -354,7 +364,10 @@ const Home = () => {
                   </div>
                 </div>
 
-                <div className="absolute -top-3 -right-3 bg-white rounded-lg p-3 shadow-xl">
+                <div
+                  className="absolute -top-3 -right-3 glass bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-white/20 animate-float"
+                  style={{ animationDelay: "2s" }}
+                >
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
                       <svg
@@ -380,19 +393,23 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-white relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50"></div>
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full blur-3xl opacity-30"></div>
+      <div className="py-20 relative overflow-hidden">
+        {/* Enhanced Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-teal-200/20 to-cyan-200/20 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "4s" }}
+        ></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-semibold mb-4">
               ⭐ Why Choose StayNest
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               A better way to find your
-              <span className="block bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="block text-gradient font-black">
                 perfect stay
               </span>
             </h2>
@@ -407,20 +424,20 @@ const Home = () => {
               {features.map((feature, index) => (
                 <div
                   key={feature.name}
-                  className="group relative bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 transform hover:-translate-y-1"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="group relative card-modern p-8 border border-gray-200/50 hover:border-blue-300/50 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 150}ms` }}
                 >
-                  {/* Gradient Background on Hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-blue-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  {/* Enhanced Gradient Background on Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-teal-50/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                   <div className="relative">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-primary-500 to-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <div className="flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-teal-500 text-white shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 animate-glow">
                       {React.cloneElement(feature.icon, {
-                        className: "h-6 w-6",
+                        className: "h-8 w-8",
                       })}
                     </div>
 
-                    <h3 className="mt-4 text-lg font-bold text-gray-900 group-hover:text-primary-700 transition-colors">
+                    <h3 className="mt-6 text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
                       {feature.name}
                     </h3>
                     <p className="mt-2 text-sm text-gray-600 leading-relaxed">
@@ -632,8 +649,16 @@ const Home = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-blue-700">
-        <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-teal-600 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+
+        <div className="relative max-w-2xl mx-auto text-center py-20 px-4 sm:py-24 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
             <span className="block">Ready to start your journey?</span>
             <span className="block">
@@ -642,7 +667,7 @@ const Home = () => {
                 : "Start booking your next adventure today."}
             </span>
           </h2>
-          <p className="mt-4 text-lg leading-6 text-blue-200">
+          <p className="mt-6 text-lg leading-7 text-white/90">
             {isAuthenticated
               ? "Discover your next perfect getaway from our curated collection of properties."
               : "Join thousands of travelers who have found their perfect stay with us."}
@@ -650,7 +675,7 @@ const Home = () => {
           {!isAuthenticated && (
             <Link
               to="/register"
-              className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 sm:w-auto"
+              className="mt-10 w-full inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-semibold rounded-2xl text-blue-600 bg-white hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-white/25 sm:w-auto animate-glow"
             >
               Sign up for free
             </Link>
@@ -658,7 +683,7 @@ const Home = () => {
           {isAuthenticated && (
             <Link
               to="/properties"
-              className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 sm:w-auto"
+              className="mt-10 w-full inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-semibold rounded-2xl text-blue-600 bg-white hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-white/25 sm:w-auto animate-glow"
             >
               Explore Properties
             </Link>
