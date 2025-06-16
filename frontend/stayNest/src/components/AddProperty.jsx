@@ -182,26 +182,53 @@ const AddProperty = () => {
     try {
       // Prepare property data for API
       const propertyData = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
+        location: {
+          address: formData.location,
+          city: formData.location, // You might want to split this
+          state: "Unknown", // Add proper state field
+          country: "Unknown", // Add proper country field
+        },
         price: parseFloat(formData.price),
-        guests: parseInt(formData.guests),
+        propertyType: formData.type.toLowerCase(),
+        maxGuests: parseInt(formData.guests),
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
+        images: formData.images.map((imageUrl) => {
+          // Handle both string URLs and objects
+          if (typeof imageUrl === "string") {
+            return { url: imageUrl, public_id: "" };
+          } else if (imageUrl && imageUrl.url) {
+            return { url: imageUrl.url, public_id: imageUrl.public_id || "" };
+          } else {
+            return { url: String(imageUrl), public_id: "" };
+          }
+        }),
+        amenities: formData.amenities,
+        rules: formData.houseRules || [],
+        cancellationPolicy: "moderate",
       };
 
       // Send to your backend API
-      const response = await fetch("/api/properties", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(propertyData),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/properties`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(propertyData),
+        }
+      );
 
       const result = await response.json();
 
-      if (result.success) {
+      if (
+        result.property &&
+        result.message === "Property created successfully"
+      ) {
         // Show success message
         alert("Property added successfully!");
 

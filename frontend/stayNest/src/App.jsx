@@ -12,6 +12,7 @@ import Properties from "./components/Properties";
 import PropertyDetail from "./components/PropertyDetail";
 import BookingRequest from "./components/BookingRequest";
 import BookingSuccess from "./components/BookingSuccess";
+import BookingDetail from "./components/BookingDetail";
 import UserBookings from "./components/UserBookings";
 import Review from "./components/Review";
 import Navbar from "./components/Navbar";
@@ -127,7 +128,7 @@ function AppContent() {
             path="/booking/:bookingId"
             element={
               <PrivateRoute>
-                <div className="max-w-4xl mx-auto">Booking Details</div>
+                <BookingDetail />
               </PrivateRoute>
             }
           />

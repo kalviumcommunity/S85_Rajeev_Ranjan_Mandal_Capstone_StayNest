@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,7 +13,6 @@ const BookingRequest = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -41,7 +40,7 @@ const BookingRequest = () => {
     }
 
     if (!property || !bookingDetails) {
-      navigate(`/property/${propertyId}`);
+      navigate(`/properties/${propertyId}`);
       return;
     }
 
@@ -50,12 +49,15 @@ const BookingRequest = () => {
     const basePrice = property.price * nights;
     const serviceFee = Math.round(basePrice * 0.14);
     const taxes = Math.round(basePrice * 0.12);
+    const cleaningFee = 500;
+    const totalPrice = basePrice + cleaningFee + serviceFee + taxes;
 
     setFormData((prev) => ({
       ...prev,
+      totalPrice,
       priceBreakdown: {
         basePrice,
-        cleaningFee: 500,
+        cleaningFee,
         serviceFee,
         taxes,
         discounts: 0,
@@ -115,7 +117,6 @@ const BookingRequest = () => {
         throw new Error(result.message || "Failed to create booking");
       }
 
-      setSuccess(true);
       // Navigate directly to success page (no payment needed)
       navigate("/booking-success", {
         state: {
@@ -219,6 +220,52 @@ const BookingRequest = () => {
                     <p className="text-sm text-gray-500">
                       {property.propertyType} • {property.maxGuests} guests •{" "}
                       {property.bedrooms} bedrooms
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Host Information */}
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Your Host
+                </h3>
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={
+                      property.host?.profilePicture ||
+                      "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                    }
+                    alt={property.host?.name || "Host"}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <div className="flex items-center">
+                      <h4 className="font-medium text-gray-900">
+                        {property.host?.name || "Host"}
+                      </h4>
+                      {property.host?.isVerified && (
+                        <svg
+                          className="w-4 h-4 text-blue-500 ml-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Host since{" "}
+                      {new Date(
+                        property.host?.createdAt || Date.now()
+                      ).getFullYear()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {property.host?.email}
                     </p>
                   </div>
                 </div>
@@ -424,7 +471,7 @@ const BookingRequest = () => {
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>${formData.totalPrice}</span>
+                  <span>₹{formData.totalPrice}</span>
                 </div>
               </div>
 
@@ -432,15 +479,32 @@ const BookingRequest = () => {
                 type="submit"
                 form="booking-form"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {loading ? "Processing..." : "Confirm Booking"}
               </button>
 
-              <p className="text-center text-sm text-gray-600 mt-4">
-                Pay ${formData.totalPrice} on arrival - Booking confirmed
-                instantly
-              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+                <div className="flex items-center">
+                  <svg
+                    className="w-4 h-4 text-amber-600 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="text-amber-800 text-sm font-medium">
+                    Pay ₹{formData.totalPrice} on arrival - Booking confirmed
+                    instantly
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

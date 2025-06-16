@@ -33,12 +33,19 @@ const ProfilePictureUpload = ({
   }, []);
 
   const handleFileSelect = async (event) => {
+    console.log("File select triggered"); // DEBUG
     const file = event.target.files[0];
-    if (!file) return;
+    console.log("Selected file:", file); // DEBUG
+
+    if (!file) {
+      console.log("No file selected"); // DEBUG
+      return;
+    }
 
     // Validate file type
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
+      console.log("Invalid file type:", file.type); // DEBUG
       setUploadError("Please select a valid image file (JPEG, PNG, or GIF)");
       return;
     }
@@ -46,9 +53,12 @@ const ProfilePictureUpload = ({
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
+      console.log("File too large:", file.size); // DEBUG
       setUploadError("File size must be less than 5MB");
       return;
     }
+
+    console.log("File validation passed, creating preview..."); // DEBUG
 
     // Create preview with cleanup
     const reader = new FileReader();
@@ -57,6 +67,7 @@ const ProfilePictureUpload = ({
     reader.onload = (e) => {
       if (isMountedRef.current) {
         setPreviewImage(e.target.result);
+        console.log("Preview image set"); // DEBUG
       }
     };
 
@@ -69,11 +80,12 @@ const ProfilePictureUpload = ({
     reader.readAsDataURL(file);
 
     // Upload file
+    console.log("Starting upload..."); // DEBUG
     await uploadFile(file);
   };
 
   const uploadFile = async (file) => {
-    if (!isMountedRef.current) return;
+    console.log("uploadFile called with:", file.name); // DEBUG
 
     setIsUploading(true);
     setUploadError("");
@@ -86,52 +98,53 @@ const ProfilePictureUpload = ({
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/users/profile-picture`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formData,
-          signal: abortController.signal, // Add abort signal
-        }
-      );
+      const apiUrl = `${import.meta.env.VITE_API_URL}/users/profile-picture`;
+      const token = localStorage.getItem("token");
 
-      // Check if component is still mounted before updating state
-      if (!isMountedRef.current) return;
+      console.log("API URL:", apiUrl); // DEBUG
+      console.log("Token exists:", !!token); // DEBUG
+      console.log("Making POST request..."); // DEBUG
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+        signal: abortController.signal, // Add abort signal
+      });
+
+      console.log("Response received:", response.status, response.statusText); // DEBUG
 
       const data = await response.json();
+      console.log("Response data:", data); // DEBUG
 
       if (response.ok && data.success && data.imageUrl) {
-        if (isMountedRef.current) {
-          setPreviewImage(data.imageUrl);
-          onImageUpdate(data.imageUrl);
+        setPreviewImage(data.imageUrl);
+        onImageUpdate(data.imageUrl);
 
-          // Immediately update user context so avatar updates everywhere
-          if (user) {
-            setUser({
-              ...user,
-              profilePicture: data.imageUrl,
-            });
-          }
-
-          setUploadError("");
+        // Immediately update user context so avatar updates everywhere
+        if (user) {
+          setUser({
+            ...user,
+            profilePicture: data.imageUrl,
+          });
         }
+
+        setUploadError("");
+        console.log("Upload successful!"); // DEBUG
       } else {
         throw new Error(data.message || "Upload failed");
       }
     } catch (error) {
-      // Don't update state if component is unmounted or request was aborted
-      if (!isMountedRef.current || error.name === "AbortError") return;
+      // Don't update state if request was aborted
+      if (error.name === "AbortError") return;
 
       console.error("Upload error:", error);
       setUploadError(error.message || "Failed to upload image");
       setPreviewImage(currentImage); // Reset to original image
     } finally {
-      if (isMountedRef.current) {
-        setIsUploading(false);
-      }
+      setIsUploading(false);
       // Clear the abort controller reference
       abortControllerRef.current = null;
     }

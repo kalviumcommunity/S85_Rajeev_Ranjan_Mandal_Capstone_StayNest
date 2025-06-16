@@ -19,15 +19,22 @@ const Properties = () => {
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      console.log(
+        "Fetching properties from:",
+        `${import.meta.env.VITE_API_URL}/properties`
+      );
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/properties`
       );
+
+      console.log("Response status:", response.status);
 
       if (!response.ok) {
         throw new Error("Failed to fetch properties");
       }
 
       const data = await response.json();
+      console.log("Properties fetched:", data.length, "properties");
       setProperties(data);
       setFilteredProperties(data);
     } catch (error) {
@@ -479,7 +486,11 @@ const PropertyCard = ({ property }) => {
       </div>
 
       {/* Property Details */}
-      <Link to={`/properties/${property._id}`} className="block p-4">
+      <Link
+        to={`/properties/${property._id}`}
+        className="block p-4"
+        onClick={() => console.log("Navigating to property:", property._id)}
+      >
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
@@ -565,9 +576,9 @@ const PropertyCard = ({ property }) => {
             </span>
             <span className="text-sm text-gray-600"> / night</span>
           </div>
-          <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold rounded-2xl hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-glow">
+          <div className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold rounded-2xl hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl animate-glow">
             View Details
-          </button>
+          </div>
         </div>
       </Link>
     </div>

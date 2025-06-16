@@ -13,16 +13,15 @@ const storage = multer.diskStorage({
   },
 });
 
-// Configure multer with enhanced settings for automatic optimization
+// Configure multer
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 20 * 1024 * 1024, // Increased to 20MB to handle large uploads before optimization
-    files: 1, // Only one file at a time
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+    files: 1,
   },
   fileFilter: (req, file, cb) => {
-    console.log("Processing file:", file); // Debug log
-    const allowedFileTypes = /jpeg|jpg|png|gif|webp|bmp|tiff/; // Added more formats
+    const allowedFileTypes = /jpeg|jpg|png|gif/;
     const extname = allowedFileTypes.test(
       path.extname(file.originalname).toLowerCase()
     );
@@ -31,15 +30,7 @@ const upload = multer({
     if (extname && mimetype) {
       return cb(null, true);
     } else {
-      console.log("Invalid file type:", {
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-      });
-      cb(
-        new Error(
-          "Only image files are allowed! Supported formats: JPEG, PNG, GIF, WebP, BMP, TIFF"
-        )
-      );
+      cb(new Error("Only image files are allowed!"));
     }
   },
 });
@@ -49,35 +40,17 @@ exports.uploadSingleImage = upload.single("image");
 
 const uploadToCloudinary = async (file) => {
   try {
-    // Ensure uploads directory exists
-    const uploadsDir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    console.log("Attempting to upload file:", file.path);
-
     const result = await cloudinary.uploader.upload(file.path, {
       folder: "staynest/property_images",
       use_filename: true,
     });
 
-    // Optional: Remove local file after successful upload
+    // Remove local file after successful upload
     fs.unlinkSync(file.path);
 
-    console.log("Cloudinary upload successful:", result.secure_url);
     return result.secure_url;
   } catch (error) {
     console.error("Cloudinary upload error:", error);
-
-    // Log additional file details for debugging
-    console.error("File details:", {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      path: file.path,
-    });
-
     throw error;
   }
 };
@@ -122,19 +95,13 @@ exports.handleProfilePictureUpload = async (req, res) => {
           width: 300,
           height: 300,
           crop: "fill",
-          gravity: "auto:face", // Smart face detection
           quality: "auto:good",
-          fetch_format: "auto",
-          flags: "progressive",
         },
       ],
       resource_type: "image",
-      format: "auto",
-      overwrite: true,
     });
 
     // Remove local file after successful upload
-    const fs = require("fs");
     fs.unlinkSync(req.file.path);
 
     res.status(200).json({
@@ -162,7 +129,7 @@ exports.handlePropertyImageUpload = async (req, res) => {
       });
     }
 
-    // Upload to cloudinary with comprehensive image optimization
+    // Upload to cloudinary with image optimization
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: "staynest/property_images",
       use_filename: true,
@@ -172,13 +139,10 @@ exports.handlePropertyImageUpload = async (req, res) => {
           width: 1200,
           height: 800,
           crop: "fill",
-          gravity: "auto",
           quality: "auto:good",
-          fetch_format: "auto",
         },
       ],
       resource_type: "image",
-      format: "auto",
     });
 
     // Remove local file after successful upload

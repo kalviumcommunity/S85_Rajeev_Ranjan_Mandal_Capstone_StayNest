@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -31,15 +31,21 @@ const PropertyDetail = () => {
   const fetchProperty = async () => {
     try {
       setLoading(true);
+      console.log("Fetching property with ID:", id);
+      console.log("API URL:", import.meta.env.VITE_API_URL);
+
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/properties/${id}`
       );
+
+      console.log("Response status:", response.status);
 
       if (!response.ok) {
         throw new Error("Property not found");
       }
 
       const data = await response.json();
+      console.log("Property data received:", data);
       setProperty(data);
     } catch (error) {
       console.error("Error fetching property:", error);
@@ -275,10 +281,16 @@ const PropertyDetail = () => {
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                   <span className="ml-1 text-lg font-medium text-gray-900">
-                    {property.rating || "4.5"}
+                    {typeof property.rating === "object"
+                      ? property.rating?.average || "4.5"
+                      : property.rating || "4.5"}
                   </span>
                   <span className="ml-1 text-gray-500">
-                    ({property.reviewCount || "0"} reviews)
+                    (
+                    {typeof property.reviewCount === "object"
+                      ? property.reviewCount?.count || "0"
+                      : property.reviewCount || "0"}{" "}
+                    reviews)
                   </span>
                 </div>
               </div>
@@ -345,6 +357,79 @@ const PropertyDetail = () => {
                     No amenities listed
                   </p>
                 )}
+              </div>
+            </div>
+
+            {/* Host Information */}
+            <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Meet Your Host
+              </h3>
+              <div className="flex items-start space-x-4">
+                <img
+                  src={
+                    property.host?.profilePicture ||
+                    "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                  }
+                  alt={property.host?.name || "Host"}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center mb-2">
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      {property.host?.name || "Host"}
+                    </h4>
+                    {property.host?.isVerified && (
+                      <svg
+                        className="w-5 h-5 text-blue-500 ml-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600 mb-3">
+                    <p>
+                      Host since{" "}
+                      {new Date(
+                        property.host?.createdAt || Date.now()
+                      ).getFullYear()}
+                    </p>
+                    <p>{property.host?.email}</p>
+                    {property.host?.phone && (
+                      <p>Phone: {property.host.phone}</p>
+                    )}
+                  </div>
+                  {property.host?.bio && (
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {property.host.bio}
+                    </p>
+                  )}
+                  <div className="flex items-center space-x-4 mt-3 text-sm text-gray-600">
+                    <span>
+                      ⭐{" "}
+                      {typeof property.host?.rating === "object"
+                        ? property.host?.rating?.average || "4.8"
+                        : property.host?.rating || "4.8"}{" "}
+                      Host rating
+                    </span>
+                    <span>
+                      🏠 {property.host?.propertyCount || "1"} properties
+                    </span>
+                    <span>
+                      📝{" "}
+                      {typeof property.host?.reviewCount === "object"
+                        ? property.host?.reviewCount?.count || "0"
+                        : property.host?.reviewCount || "0"}{" "}
+                      reviews
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -547,9 +632,9 @@ const PropertyDetail = () => {
 
               <button
                 onClick={handleBooking}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-4"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg mb-4"
               >
-                {user ? "Reserve" : "Login to Book"}
+                {user ? "Proceed to Checkout" : "Login to Book"}
               </button>
 
               <div className="text-center text-sm text-gray-600">

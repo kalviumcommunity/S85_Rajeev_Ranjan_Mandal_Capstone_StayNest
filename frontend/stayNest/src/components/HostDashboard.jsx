@@ -17,11 +17,14 @@ const HostDashboard = () => {
     // Fetch user properties from API
     const fetchProperties = async () => {
       try {
-        const response = await fetch("/api/properties/my-properties", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/properties/my-properties`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         const result = await response.json();
 
@@ -73,12 +76,15 @@ const HostDashboard = () => {
   const deleteProperty = async (propertyId) => {
     if (window.confirm("Are you sure you want to delete this property?")) {
       try {
-        const response = await fetch(`/api/properties/${propertyId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/properties/${propertyId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         const result = await response.json();
 
@@ -356,7 +362,9 @@ const HostDashboard = () => {
                     <div className="flex items-center space-x-4">
                       <img
                         src={
-                          property.images[0] ||
+                          (property.images &&
+                            property.images[0] &&
+                            property.images[0].url) ||
                           "https://via.placeholder.com/100x80"
                         }
                         alt={property.title}
@@ -367,15 +375,17 @@ const HostDashboard = () => {
                           {property.title}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          {property.location}
+                          {typeof property.location === "string"
+                            ? property.location
+                            : `${property.location.city}, ${property.location.state}`}
                         </p>
                         <div className="flex items-center mt-1">
                           <span className="text-sm text-gray-500">
-                            ${property.price}/night
+                            ₹{property.price}/night
                           </span>
                           <span className="mx-2 text-gray-300">•</span>
                           <span className="text-sm text-gray-500">
-                            {property.guests} guests
+                            {property.maxGuests} guests
                           </span>
                           <span className="mx-2 text-gray-300">•</span>
                           <span className="text-sm text-gray-500">
