@@ -167,94 +167,31 @@ exports.handlePropertyImageUpload = async (req, res) => {
       folder: "staynest/property_images",
       use_filename: true,
       unique_filename: true,
-      // Comprehensive transformation for automatic optimization
       transformation: [
-        // First transformation: Resize and crop intelligently
         {
           width: 1200,
           height: 800,
           crop: "fill",
-          gravity: "auto", // Automatically detect best crop area
-          quality: "auto:good", // Automatic quality optimization
-          fetch_format: "auto", // Automatically choose best format (WebP, AVIF, etc.)
-        },
-        // Second transformation: Further optimize file size
-        {
-          flags: "progressive", // Progressive JPEG loading
-          quality: "auto:eco", // Eco-friendly compression for smaller files
+          gravity: "auto",
+          quality: "auto:good",
+          fetch_format: "auto",
         },
       ],
-      // Additional optimization settings
       resource_type: "image",
-      format: "auto", // Let Cloudinary choose the best format
-      // Limit file size after processing (max 500KB)
-      bytes: 500000,
-      // Enable automatic backup in case of processing issues
-      backup: false,
-      // Overwrite if same filename exists
-      overwrite: true,
-      // Additional metadata
-      context: {
-        purpose: "property_listing",
-        auto_optimized: "true",
-      },
+      format: "auto",
     });
 
     // Remove local file after successful upload
-    const fs = require("fs");
     fs.unlinkSync(req.file.path);
 
     res.status(200).json({
       success: true,
-      message: "Property image uploaded and optimized successfully",
+      message: "Property image uploaded successfully",
       imageUrl: result.secure_url,
       publicId: result.public_id,
-      // Include optimization info for debugging
-      optimizationInfo: {
-        originalSize: req.file.size,
-        optimizedFormat: result.format,
-        finalWidth: result.width,
-        finalHeight: result.height,
-        bytes: result.bytes,
-      },
     });
   } catch (error) {
     console.error("Property image upload error:", error);
-
-    // If Cloudinary processing fails, try with basic settings
-    if (error.message && error.message.includes("bytes")) {
-      try {
-        // Fallback with more aggressive compression
-        const fallbackResult = await cloudinary.uploader.upload(req.file.path, {
-          folder: "staynest/property_images",
-          transformation: [
-            {
-              width: 800,
-              height: 600,
-              crop: "fill",
-              quality: "auto:low",
-              fetch_format: "auto",
-            },
-          ],
-          resource_type: "image",
-        });
-
-        // Remove local file
-        const fs = require("fs");
-        fs.unlinkSync(req.file.path);
-
-        return res.status(200).json({
-          success: true,
-          message: "Property image uploaded with fallback optimization",
-          imageUrl: fallbackResult.secure_url,
-          publicId: fallbackResult.public_id,
-          note: "Image was heavily compressed due to size constraints",
-        });
-      } catch (fallbackError) {
-        console.error("Fallback upload also failed:", fallbackError);
-      }
-    }
-
     res.status(500).json({
       success: false,
       message: "Property image upload failed",
