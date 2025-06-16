@@ -637,19 +637,32 @@ const Home = () => {
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
             <span className="block">Ready to start your journey?</span>
             <span className="block">
-              Start booking your next adventure today.
+              {isAuthenticated
+                ? "Explore amazing places to stay."
+                : "Start booking your next adventure today."}
             </span>
           </h2>
           <p className="mt-4 text-lg leading-6 text-blue-200">
-            Join thousands of travelers who have found their perfect stay with
-            us.
+            {isAuthenticated
+              ? "Discover your next perfect getaway from our curated collection of properties."
+              : "Join thousands of travelers who have found their perfect stay with us."}
           </p>
-          <Link
-            to="/register"
-            className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 sm:w-auto"
-          >
-            Sign up for free
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              to="/register"
+              className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 sm:w-auto"
+            >
+              Sign up for free
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
+              to="/properties"
+              className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 sm:w-auto"
+            >
+              Explore Properties
+            </Link>
+          )}
         </div>
       </div>
     </div>
