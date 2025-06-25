@@ -4,28 +4,44 @@ export const propertyValidationSchema = Yup.object().shape({
   title: Yup.string()
     .required('Property title is required')
     .trim()
-    .min(3, 'Title must be at least 3 characters')
+    .min(5, 'Title must be at least 5 characters')
     .max(100, 'Title must not exceed 100 characters'),
 
   description: Yup.string()
     .required('Description is required')
     .trim()
     .min(20, 'Description must be at least 20 characters')
-    .max(1000, 'Description must not exceed 1000 characters'),
+    .max(2000, 'Description must not exceed 2000 characters'),
 
   location: Yup.object().shape({
-    address: Yup.string().required('Address is required').trim(),
-    city: Yup.string().required('City is required').trim(),
-    state: Yup.string().required('State is required').trim(),
-    country: Yup.string().required('Country is required').trim()
+    address: Yup.string()
+      .required('Address is required')
+      .trim()
+      .min(5, 'Address must be at least 5 characters')
+      .max(200, 'Address must not exceed 200 characters'),
+    city: Yup.string()
+      .required('City is required')
+      .trim()
+      .min(2, 'City must be at least 2 characters')
+      .max(50, 'City must not exceed 50 characters'),
+    state: Yup.string()
+      .required('State is required')
+      .trim()
+      .min(2, 'State must be at least 2 characters')
+      .max(50, 'State must not exceed 50 characters'),
+    country: Yup.string()
+      .required('Country is required')
+      .trim()
+      .min(2, 'Country must be at least 2 characters')
+      .max(50, 'Country must not exceed 50 characters')
   }),
 
   price: Yup.number()
-    .required('Price is required')
-    .typeError('Price must be a number')
+    .required('Please enter the property price')
+    .typeError('Price must be a valid number')
     .positive('Price cannot be negative')
-    .min(1, 'Price must be at least 1')
-    .max(100000, 'Price must not exceed 10,0000'),
+    .min(1, 'Minimum price is 1 rs.')
+    .max(100000, 'Maximum price is 100000 rs.'),
 
   images: Yup.array()
     .of(

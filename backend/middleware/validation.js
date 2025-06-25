@@ -93,8 +93,8 @@ const validatePropertyCreation = [
     .withMessage("Country must be between 2 and 50 characters"),
 
   body("price")
-    .isFloat({ min: 1, max: 10000 })
-    .withMessage("Price must be between $1 and $10,000"),
+    .isFloat({ min: 1, max: 100000 })
+    .withMessage("Price must be between 1 rs. and 100000 rs."),
 
   body("propertyType")
     .isIn(["apartment", "house", "villa", "cottage", "other"])
