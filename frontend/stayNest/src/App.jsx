@@ -1,3 +1,5 @@
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   BrowserRouter as Router,
   Routes,
@@ -285,6 +287,7 @@ function App() {
     <Router>
       <AuthProvider>
         <AppContent />
+        <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </Router>
   );
