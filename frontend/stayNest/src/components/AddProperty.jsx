@@ -1,44 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PropertyImageUpload from "./PropertyImageUpload";
+import { Formik, Form, Field } from 'formik';
+import { propertyValidationSchema } from '../validations/propertyValidation';
+import { toast } from 'react-toastify';
 
 const AddProperty = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    location: "",
-    type: "",
-    price: "",
-    guests: "",
-    bedrooms: "",
-    bathrooms: "",
-    amenities: [],
-    images: [],
-    checkIn: "3:00 PM",
-    checkOut: "11:00 AM",
-    rules: [],
-  });
-
-  const [errors, setErrors] = useState({});
-  const [newRule, setNewRule] = useState("");
 
   const propertyTypes = [
-    "Apartment",
-    "House",
-    "Villa",
-    "Cabin",
-    "Loft",
-    "Condo",
-    "Townhouse",
-    "Studio",
-    "Penthouse",
-    "Cottage",
+    "apartment",
+    "house",
+    "villa",
+    "cottage",
+    "other"
   ];
 
   const availableAmenities = [
@@ -68,681 +45,356 @@ const AddProperty = () => {
     "Business Friendly",
   ];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+  const initialValues = {
+    title: "",
+    description: "",
+    location: {
+      address: "",
+      city: "",
+      state: "",
+      country: ""
+    },
+    price: "",
+    propertyType: "",
+    maxGuests: "",
+    bedrooms: "",
+    bathrooms: "",
+    amenities: [],
+    images: [],
+    rules: [],
+    cancellationPolicy: "moderate",
+    availability: true
+  };
+
+  const scrollToError = (errors) => {
+    const firstError = Object.keys(errors)[0];
+    if (firstError) {
+      const element = document.querySelector(`[name="${firstError}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   };
 
-  const handleAmenityToggle = (amenity) => {
-    setFormData((prev) => ({
-      ...prev,
-      amenities: prev.amenities.includes(amenity)
-        ? prev.amenities.filter((a) => a !== amenity)
-        : [...prev.amenities, amenity],
-    }));
-  };
-
-  const handleImagesChange = (images) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: images,
-    }));
-
-    // Clear image errors when images are updated
-    if (errors.images && images.length > 0) {
-      setErrors((prev) => ({
-        ...prev,
-        images: "",
-      }));
-    }
-  };
-
-  const addRule = () => {
-    if (newRule.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        rules: [...prev.rules, newRule.trim()],
-      }));
-      setNewRule("");
-    }
-  };
-
-  const removeRule = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      rules: prev.rules.filter((_, i) => i !== index),
-    }));
-  };
-
-  const validateStep = (step) => {
-    const newErrors = {};
-
-    if (step === 1) {
-      if (!formData.title.trim())
-        newErrors.title = "Property title is required";
-      if (!formData.description.trim())
-        newErrors.description = "Description is required";
-      if (!formData.location.trim())
-        newErrors.location = "Location is required";
-      if (!formData.type) newErrors.type = "Property type is required";
-    }
-
-    if (step === 2) {
-      if (!formData.price || formData.price <= 0)
-        newErrors.price = "Valid price is required";
-      if (!formData.guests || formData.guests <= 0)
-        newErrors.guests = "Number of guests is required";
-      if (!formData.bedrooms || formData.bedrooms < 0)
-        newErrors.bedrooms = "Number of bedrooms is required";
-      if (!formData.bathrooms || formData.bathrooms <= 0)
-        newErrors.bathrooms = "Number of bathrooms is required";
-    }
-
-    if (step === 3) {
-      if (formData.amenities.length === 0)
-        newErrors.amenities = "Please select at least one amenity";
-    }
-
-    if (step === 4) {
-      if (formData.images.length === 0)
-        newErrors.images = "Please add at least one image";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => prev + 1);
-    }
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => prev - 1);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateStep(currentStep)) return;
-
-    setIsSubmitting(true);
-
+  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
-      // Prepare property data for API
-      const propertyData = {
-        title: formData.title,
-        description: formData.description,
-        location: {
-          address: formData.location,
-          city: formData.location, // You might want to split this
-          state: "Unknown", // Add proper state field
-          country: "Unknown", // Add proper country field
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/properties`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        price: parseFloat(formData.price),
-        propertyType: formData.type.toLowerCase(),
-        maxGuests: parseInt(formData.guests),
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
-        images: formData.images.map((imageUrl) => {
-          // Handle both string URLs and objects
-          if (typeof imageUrl === "string") {
-            return { url: imageUrl, public_id: "" };
-          } else if (imageUrl && imageUrl.url) {
-            return { url: imageUrl.url, public_id: imageUrl.public_id || "" };
-          } else {
-            return { url: String(imageUrl), public_id: "" };
-          }
-        }),
-        amenities: formData.amenities,
-        rules: formData.houseRules || [],
-        cancellationPolicy: "moderate",
-      };
-
-      // Send to your backend API
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/properties`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(propertyData),
-        }
-      );
+        body: JSON.stringify(values),
+      });
 
       const result = await response.json();
 
-      if (
-        result.property &&
-        result.message === "Property created successfully"
-      ) {
-        // Show success message
-        alert("Property added successfully!");
-
-        // Navigate to host dashboard
+      if (result.property && result.message === "Property created successfully") {
+        toast.success("Property added successfully!");
         navigate("/host/dashboard");
       } else {
-        throw new Error(result.message || "Failed to add property");
+        const errorMessage = result.message || "Failed to add property";
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Error adding property:", error);
-      alert("Error adding property. Please try again.");
+      toast.error("Error adding property. Please try again.");
     } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Basic Information
-            </h3>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Property Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.title ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="e.g., Luxury Downtown Apartment"
-              />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={4}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.description ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="Describe your property, its features, and what makes it special..."
-              />
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location *
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.location ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="e.g., New York, NY"
-              />
-              {errors.location && (
-                <p className="mt-1 text-sm text-red-600">{errors.location}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Property Type *
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.type ? "border-red-300" : "border-gray-300"
-                }`}
-              >
-                <option value="">Select property type</option>
-                {propertyTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-              {errors.type && (
-                <p className="mt-1 text-sm text-red-600">{errors.type}</p>
-              )}
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Property Details
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price per Night (₹) *
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  min="1"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.price ? "border-red-300" : "border-gray-300"
-                  }`}
-                  placeholder="150"
-                />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-600">{errors.price}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Maximum Guests *
-                </label>
-                <input
-                  type="number"
-                  name="guests"
-                  value={formData.guests}
-                  onChange={handleInputChange}
-                  min="1"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.guests ? "border-red-300" : "border-gray-300"
-                  }`}
-                  placeholder="4"
-                />
-                {errors.guests && (
-                  <p className="mt-1 text-sm text-red-600">{errors.guests}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bedrooms *
-                </label>
-                <input
-                  type="number"
-                  name="bedrooms"
-                  value={formData.bedrooms}
-                  onChange={handleInputChange}
-                  min="0"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.bedrooms ? "border-red-300" : "border-gray-300"
-                  }`}
-                  placeholder="2"
-                />
-                {errors.bedrooms && (
-                  <p className="mt-1 text-sm text-red-600">{errors.bedrooms}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bathrooms *
-                </label>
-                <input
-                  type="number"
-                  name="bathrooms"
-                  value={formData.bathrooms}
-                  onChange={handleInputChange}
-                  min="0.5"
-                  step="0.5"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.bathrooms ? "border-red-300" : "border-gray-300"
-                  }`}
-                  placeholder="2"
-                />
-                {errors.bathrooms && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.bathrooms}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Check-in Time
-                </label>
-                <input
-                  type="text"
-                  name="checkIn"
-                  value={formData.checkIn}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="3:00 PM"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Check-out Time
-                </label>
-                <input
-                  type="text"
-                  name="checkOut"
-                  value={formData.checkOut}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="11:00 AM"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Amenities
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Select all amenities available at your property
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {availableAmenities.map((amenity) => (
-                <label
-                  key={amenity}
-                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    formData.amenities.includes(amenity)
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-300 hover:border-gray-400"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.amenities.includes(amenity)}
-                    onChange={() => handleAmenityToggle(amenity)}
-                    className="sr-only"
-                  />
-                  <div
-                    className={`w-4 h-4 rounded border-2 mr-2 flex items-center justify-center ${
-                      formData.amenities.includes(amenity)
-                        ? "border-blue-500 bg-blue-500"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {formData.amenities.includes(amenity) && (
-                      <svg
-                        className="w-3 h-3 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-sm">{amenity}</span>
-                </label>
-              ))}
-            </div>
-
-            {errors.amenities && (
-              <p className="mt-2 text-sm text-red-600">{errors.amenities}</p>
-            )}
-
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-700">
-                <strong>Selected:</strong> {formData.amenities.length} amenities
-              </p>
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Property Images
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Upload high-quality images of your property to attract guests
-            </p>
-
-            <PropertyImageUpload
-              images={formData.images}
-              onImagesChange={handleImagesChange}
-              maxImages={5}
-              required={true}
-            />
-
-            {errors.images && (
-              <p className="mt-2 text-sm text-red-600">{errors.images}</p>
-            )}
-
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-700">
-                <strong>Tip:</strong> Upload clear, well-lit photos that
-                showcase your property's best features. The first image will be
-                used as the main photo.
-              </p>
-            </div>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              House Rules
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Set clear expectations for your guests
-            </p>
-
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newRule}
-                  onChange={(e) => setNewRule(e.target.value)}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., No smoking, No pets, etc."
-                  onKeyPress={(e) => e.key === "Enter" && addRule()}
-                />
-                <button
-                  type="button"
-                  onClick={addRule}
-                  className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Add Rule
-                </button>
-              </div>
-
-              {formData.rules.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900">Current Rules:</h4>
-                  {formData.rules.map((rule, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <span className="text-gray-700">{rule}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeRule(index)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h4 className="font-medium text-green-800 mb-2">
-                Common House Rules:
-              </h4>
-              <ul className="text-sm text-green-700 space-y-1">
-                <li>• No smoking</li>
-                <li>• No pets</li>
-                <li>• No parties or events</li>
-                <li>• Quiet hours: 10 PM - 8 AM</li>
-                <li>• Maximum occupancy as listed</li>
-              </ul>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Add New Property
-              </h1>
-              <p className="mt-2 text-gray-600">
-                Share your space with travelers around the world
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/host/dashboard")}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
+    <div className="max-w-4xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-6">Add New Property</h2>
+
+      <Formik
+        initialValues={initialValues}
+        validationSchema={propertyValidationSchema}
+        onSubmit={handleSubmit}
+        validateOnBlur={true}
+        validateOnChange={false}
+      >
+        {({ errors, touched, isSubmitting, setFieldValue, values, validateForm, handleSubmit: formikHandleSubmit }) => (
+          <Form className="space-y-6" onSubmit={async (e) => {
+            e.preventDefault();
+            const errors = await validateForm();
+            if (Object.keys(errors).length > 0) {
+              scrollToError(errors);
+              toast.error('Please fix the validation errors');
+              return;
+            }
+            formikHandleSubmit(e);
+          }}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Property Title *
+                </label>
+                <Field
+                  name="title"
+                  type="text"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.title && touched.title ? 'border-red-500' : 'border-gray-300'}`}
+                  placeholder="e.g., Luxury Downtown Apartment"
                 />
-              </svg>
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
+                {errors.title && touched.title && (
+                  <div className="text-red-500 text-sm mt-1">{errors.title}</div>
+                )}
+              </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentStep} of 5
-            </span>
-            <span className="text-sm text-gray-500">
-              {Math.round((currentStep / 5) * 100)}% Complete
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / 5) * 100}%` }}
-            ></div>
-          </div>
-        </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description *
+                </label>
+                <Field
+                  as="textarea"
+                  name="description"
+                  rows="4"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.description && touched.description ? 'border-red-500' : 'border-gray-300'}`}
+                  placeholder="Describe your property..."
+                />
+                {errors.description && touched.description && (
+                  <div className="text-red-500 text-sm mt-1">{errors.description}</div>
+                )}
+              </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 lg:p-8">
-          <form onSubmit={handleSubmit}>
-            {renderStepContent()}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address *
+                  </label>
+                  <Field
+                    name="location.address"
+                    type="text"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.address && touched.location?.address ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="Street address"
+                  />
+                  {errors.location?.address && touched.location?.address && (
+                    <div className="text-red-500 text-sm mt-1">{errors.location.address}</div>
+                  )}
+                </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    City *
+                  </label>
+                  <Field
+                    name="location.city"
+                    type="text"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.city && touched.location?.city ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="City"
+                  />
+                  {errors.location?.city && touched.location?.city && (
+                    <div className="text-red-500 text-sm mt-1">{errors.location.city}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    State *
+                  </label>
+                  <Field
+                    name="location.state"
+                    type="text"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.state && touched.location?.state ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="State"
+                  />
+                  {errors.location?.state && touched.location?.state && (
+                    <div className="text-red-500 text-sm mt-1">{errors.location.state}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country *
+                  </label>
+                  <Field
+                    name="location.country"
+                    type="text"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.country && touched.location?.country ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="Country"
+                  />
+                  {errors.location?.country && touched.location?.country && (
+                    <div className="text-red-500 text-sm mt-1">{errors.location.country}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Property Type *
+                  </label>
+                  <Field
+                    as="select"
+                    name="propertyType"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.propertyType && touched.propertyType ? 'border-red-500' : 'border-gray-300'}`}
+                  >
+                    <option value="">Select property type</option>
+                    {propertyTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </option>
+                    ))}
+                  </Field>
+                  {errors.propertyType && touched.propertyType && (
+                    <div className="text-red-500 text-sm mt-1">{errors.propertyType}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price per Night (₹) *
+                  </label>
+                  <Field
+                    name="price"
+                    type="number"
+                    min="0"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.price && touched.price ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="150"
+                  />
+                  {errors.price && touched.price && (
+                    <div className="text-red-500 text-sm mt-1">{errors.price}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Maximum Guests *
+                  </label>
+                  <Field
+                    name="maxGuests"
+                    type="number"
+                    min="1"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.maxGuests && touched.maxGuests ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="4"
+                  />
+                  {errors.maxGuests && touched.maxGuests && (
+                    <div className="text-red-500 text-sm mt-1">{errors.maxGuests}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bedrooms *
+                  </label>
+                  <Field
+                    name="bedrooms"
+                    type="number"
+                    min="0"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.bedrooms && touched.bedrooms ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="2"
+                  />
+                  {errors.bedrooms && touched.bedrooms && (
+                    <div className="text-red-500 text-sm mt-1">{errors.bedrooms}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bathrooms *
+                  </label>
+                  <Field
+                    name="bathrooms"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.bathrooms && touched.bathrooms ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="2"
+                  />
+                  {errors.bathrooms && touched.bathrooms && (
+                    <div className="text-red-500 text-sm mt-1">{errors.bathrooms}</div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amenities *
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {availableAmenities.map((amenity) => (
+                    <label
+                      key={amenity}
+                      className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors
+                        ${values.amenities.includes(amenity)
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-300 hover:border-gray-400'}`}
+                    >
+                      <Field
+                        type="checkbox"
+                        name="amenities"
+                        value={amenity}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`w-4 h-4 rounded border-2 mr-2 flex items-center justify-center
+                          ${values.amenities.includes(amenity)
+                            ? 'border-blue-500 bg-blue-500'
+                            : 'border-gray-300'}`}
+                      >
+                        {values.amenities.includes(amenity) && (
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-sm">{amenity}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.amenities && touched.amenities && (
+                  <div className="text-red-500 text-sm mt-2">{errors.amenities}</div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Property Images *
+                </label>
+                <PropertyImageUpload
+                  images={values.images}
+                  onImagesChange={(images) => setFieldValue('images', images)}
+                  maxImages={10}
+                  required={true}
+                />
+                {errors.images && touched.images && (
+                  <div className="text-red-500 text-sm mt-2">{errors.images}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  currentStep === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                onClick={() => navigate(-1)}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                Previous
+                Cancel
               </button>
-
-              {currentStep < 5 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Next Step
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Adding Property...
-                    </div>
-                  ) : (
-                    "Add Property"
-                  )}
-                </button>
-              )}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors
+                  ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isSubmitting ? 'Adding Property...' : 'Add Property'}
+              </button>
             </div>
-          </form>
-        </div>
-      </div>
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 };

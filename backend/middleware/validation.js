@@ -82,6 +82,16 @@ const validatePropertyCreation = [
     .isLength({ min: 2, max: 50 })
     .withMessage("City must be between 2 and 50 characters"),
 
+  body("location.state")
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("State must be between 2 and 50 characters"),
+
+  body("location.country")
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Country must be between 2 and 50 characters"),
+
   body("price")
     .isFloat({ min: 1, max: 10000 })
     .withMessage("Price must be between $1 and $10,000"),
@@ -101,6 +111,45 @@ const validatePropertyCreation = [
   body("maxGuests")
     .isInt({ min: 1, max: 50 })
     .withMessage("Max guests must be between 1 and 50"),
+
+  body("images")
+    .isArray({ min: 1 })
+    .withMessage("At least one image is required")
+    .custom((images) => {
+      return images.every(img => 
+        img.hasOwnProperty('url') && 
+        img.hasOwnProperty('public_id') && 
+        typeof img.url === 'string' && 
+        typeof img.public_id === 'string'
+      );
+    })
+    .withMessage("Each image must have valid url and public_id properties"),
+
+  body("amenities")
+    .isArray({ min: 1 })
+    .withMessage("At least one amenity is required")
+    .custom((amenities) => {
+      return amenities.every(amenity => typeof amenity === 'string');
+    })
+    .withMessage("Each amenity must be a string"),
+
+  body("rules")
+    .optional()
+    .isArray()
+    .custom((rules) => {
+      return rules.every(rule => typeof rule === 'string');
+    })
+    .withMessage("Each rule must be a string"),
+
+  body("cancellationPolicy")
+    .optional()
+    .isIn(['flexible', 'moderate', 'strict'])
+    .withMessage("Invalid cancellation policy"),
+
+  body("availability")
+    .optional()
+    .isBoolean()
+    .withMessage("Availability must be a boolean value"),
 
   handleValidationErrors,
 ];

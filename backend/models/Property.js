@@ -33,10 +33,6 @@ const propertySchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-      coordinates: {
-        latitude: Number,
-        longitude: Number,
-      },
     },
     price: {
       type: Number,
@@ -127,7 +123,6 @@ const propertySchema = new mongoose.Schema(
 );
 
 // Indexes for better query performance
-propertySchema.index({ "location.coordinates": "2dsphere" });
 propertySchema.index({ host: 1 });
 propertySchema.index({ propertyType: 1 });
 propertySchema.index({ price: 1 });
