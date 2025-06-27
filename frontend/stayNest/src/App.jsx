@@ -1,3 +1,5 @@
+import React from 'react';
+import { AnalyticsWrapper, initializeAnalytics } from './analytics.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -32,6 +34,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsOfService from "./components/TermsOfService";
 
 import "./App.css";
+import ReactGA from 'react-ga4';
 
 // Protected Route Component
 const PrivateRoute = ({ children, roles = [] }) => {
@@ -62,7 +65,13 @@ const PublicRoute = ({ children }) => {
   return user ? <Navigate to="/" replace /> : children;
 };
 
+import { useLocation } from "react-router-dom";
+
 function AppContent() {
+  const location = useLocation();
+  React.useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+  }, [location]);
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -282,11 +291,17 @@ function AppContent() {
   );
 }
 
+
 function App() {
+  React.useEffect(() => {
+    initializeAnalytics();
+  }, []);
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <AnalyticsWrapper>
+          <AppContent />
+        </AnalyticsWrapper>
         <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </Router>
