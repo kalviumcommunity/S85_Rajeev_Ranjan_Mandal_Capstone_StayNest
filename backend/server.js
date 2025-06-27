@@ -49,7 +49,6 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Auth rate limiter is now applied specifically in routes that need it
 
 // Apply rate limiting
 app.use(generalLimiter);
