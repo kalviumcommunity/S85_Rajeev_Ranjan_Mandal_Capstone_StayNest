@@ -17,9 +17,11 @@ export const initializeAnalytics = () => {
   try {
     if (process.env.REACT_APP_GOOGLE_ANALYTICS_ID) {
       console.log('Initializing Google Analytics with ID:', process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
-      ReactGA.initialize(process.env.REACT_APP_GOOGLE_ANALYTICS_ID);
-      ReactGA.GA_DEBUG = true;
-      ReactGA.debugMode();
+      ReactGA.initialize({
+        trackingId: process.env.REACT_APP_GOOGLE_ANALYTICS_ID,
+        debug_mode: true,
+        test_mode: false
+      });
     }
   } catch (error) {
     console.error('Failed to initialize Google Analytics:', error);
@@ -32,7 +34,8 @@ export const trackPageView = (pagePath) => {
       console.log('Tracking page view:', pagePath);
       ReactGA.send({
         hitType: 'pageview',
-        page: pagePath
+        page: pagePath,
+        title: document.title
       });
     }
   } catch (error) {
