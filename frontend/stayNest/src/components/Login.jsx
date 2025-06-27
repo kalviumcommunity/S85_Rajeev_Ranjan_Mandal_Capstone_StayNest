@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ReactGA from 'react-ga4';
 
 import GoogleOAuthButton from "./GoogleOAuthButton";
 
@@ -55,6 +56,13 @@ const Login = () => {
     setIsSubmitting(false);
 
     if (success) {
+      // Track login event
+      ReactGA.event({
+        category: 'User',
+        action: 'Login',
+        label: 'User Login',
+        value: 1
+      });
       navigate("/");
     }
   };
