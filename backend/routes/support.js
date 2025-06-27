@@ -23,7 +23,6 @@ const supportRateLimit = rateLimit({
 // Apply rate limiting to all support routes
 router.use(supportRateLimit);
 
-// @route   POST /api/support/query
 // @desc    Submit a support query via email
 // @access  Public
 router.post('/query', submitSupportQuery);

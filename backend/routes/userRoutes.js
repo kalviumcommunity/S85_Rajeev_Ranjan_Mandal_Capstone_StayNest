@@ -42,7 +42,7 @@ router.post("/register", authLimiter, validateUserRegistration, register);
 router.post("/login", authLimiter, validateUserLogin, login);
 router.post("/logout", logout);
 
-// Protected routes
+
 router.use(auth);
 
 router.get("/me", getCurrentUser);
