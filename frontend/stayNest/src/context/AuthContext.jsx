@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { setUserId, setUserProperties } from "../analytics.jsx";
 
 const AuthContext = createContext();
 
@@ -44,6 +45,8 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.get(`${API_URL}/users/me`);
       if (data.success) {
         setUser(data.user);
+        setUserId(data.user?._id);
+        setUserProperties({ role: data.user?.role });
         // Update the token in localStorage if a new one was returned
         if (data.token) {
           localStorage.setItem("token", data.token);
@@ -73,6 +76,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", data.token);
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         setUser(data.user);
+        setUserId(data.user?._id);
+        setUserProperties({ role: data.user?.role });
         return { success: true };
       } else {
         throw new Error(data.message || "Registration failed");
@@ -98,6 +103,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", data.token);
         axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         setUser(data.user);
+        setUserId(data.user?._id);
+        setUserProperties({ role: data.user?.role });
         return { success: true };
       } else {
         throw new Error(data.message || "Login failed");
@@ -140,6 +147,8 @@ export const AuthProvider = ({ children }) => {
   // Set user directly (for OAuth success)
   const setUserData = (userData) => {
     setUser(userData);
+    setUserId(userData?._id);
+    setUserProperties({ role: userData?.role });
   };
 
   // Become a host (upgrade from guest to host)
