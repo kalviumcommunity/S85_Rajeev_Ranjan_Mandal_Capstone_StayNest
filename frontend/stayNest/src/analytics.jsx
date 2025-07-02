@@ -43,8 +43,7 @@ export const initializeAnalytics = () => {
         "Initializing Google Analytics with ID:",
         import.meta.env.VITE_GOOGLE_ANALYTICS_ID
       );
-      ReactGA.initialize({
-        trackingId: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
+      ReactGA.initialize(import.meta.env.VITE_GOOGLE_ANALYTICS_ID, {
         debug_mode: true,
         test_mode: false,
       });
