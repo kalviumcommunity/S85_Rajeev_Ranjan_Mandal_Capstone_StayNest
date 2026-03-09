@@ -33,7 +33,7 @@ const Contact = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setSuccess(
-        "Thank you for contacting us! We'll get back to you within 24 hours."
+        "Thank you for contacting us! We'll get back to you within 24 hours.",
       );
       setFormData({
         name: "",
@@ -42,7 +42,7 @@ const Contact = () => {
         category: "general",
         message: "",
       });
-    } catch (error) {
+    } catch {
       setError("Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const BookingManagement = () => {
@@ -7,11 +7,7 @@ const BookingManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    fetchBookings();
-  }, [currentPage, statusFilter]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       const params = new URLSearchParams({
         page: currentPage,
@@ -20,7 +16,7 @@ const BookingManagement = () => {
       });
 
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/admin/bookings?${params}`
+        `${import.meta.env.VITE_API_URL}/admin/bookings?${params}`,
       );
       setBookings(response.data.data.bookings);
     } catch (error) {
@@ -28,7 +24,11 @@ const BookingManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const updateBookingStatus = async (bookingId, status, adminNotes = "") => {
     try {
@@ -37,7 +37,7 @@ const BookingManagement = () => {
         {
           status,
           adminNotes,
-        }
+        },
       );
       fetchBookings(); // Refresh the list
       alert("Booking status updated successfully!");
@@ -54,7 +54,7 @@ const BookingManagement = () => {
         {
           refundAmount: parseFloat(amount),
           refundReason: reason,
-        }
+        },
       );
       fetchBookings(); // Refresh the list
       alert("Refund processed successfully!");
@@ -147,7 +147,7 @@ const BookingManagement = () => {
                   </div>
                   <span
                     className={`px-3 py-1 text-sm rounded-full ${getStatusColor(
-                      booking.status
+                      booking.status,
                     )}`}
                   >
                     {booking.status?.charAt(0).toUpperCase() +
@@ -213,7 +213,7 @@ const BookingManagement = () => {
                     <p className="text-xs text-purple-600">
                       Processed on{" "}
                       {new Date(
-                        booking.refund.processedAt
+                        booking.refund.processedAt,
                       ).toLocaleDateString()}
                     </p>
                   </div>
@@ -233,7 +233,7 @@ const BookingManagement = () => {
                       updateBookingStatus(
                         booking._id,
                         e.target.value,
-                        notes || ""
+                        notes || "",
                       );
                     }}
                     className="w-full border rounded px-3 py-2 text-sm"

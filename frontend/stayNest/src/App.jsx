@@ -1,7 +1,7 @@
-import React from 'react';
-import { AnalyticsWrapper, initializeAnalytics } from './analytics.jsx';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React from "react";
+import { AnalyticsWrapper, initializeAnalytics } from "./analytics.jsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   BrowserRouter as Router,
   Routes,
@@ -17,6 +17,7 @@ import PropertyDetail from "./components/PropertyDetail";
 import BookingRequest from "./components/BookingRequest";
 import BookingSuccess from "./components/BookingSuccess";
 import BookingDetail from "./components/BookingDetail";
+import BookingChat from "./components/BookingChat";
 import UserBookings from "./components/UserBookings";
 import Review from "./components/Review";
 import Navbar from "./components/Navbar";
@@ -34,7 +35,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsOfService from "./components/TermsOfService";
 
 import "./App.css";
-import ReactGA from 'react-ga4';
+import ReactGA from "react-ga4";
 
 // Protected Route Component
 const PrivateRoute = ({ children, roles = [] }) => {
@@ -70,7 +71,10 @@ import { useLocation } from "react-router-dom";
 function AppContent() {
   const location = useLocation();
   React.useEffect(() => {
-    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    ReactGA.send({
+      hitType: "pageview",
+      page: location.pathname + location.search,
+    });
   }, [location]);
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -140,6 +144,14 @@ function AppContent() {
             element={
               <PrivateRoute>
                 <BookingDetail />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/messages/booking/:bookingId"
+            element={
+              <PrivateRoute>
+                <BookingChat />
               </PrivateRoute>
             }
           />
@@ -290,7 +302,6 @@ function AppContent() {
     </div>
   );
 }
-
 
 function App() {
   React.useEffect(() => {

@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { setUserId, setUserProperties } from "../analytics.jsx";
@@ -20,7 +22,7 @@ axios.interceptors.response.use(
       // You might want to redirect to login here or handle it in the component
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export const AuthProvider = ({ children }) => {
@@ -50,9 +52,8 @@ export const AuthProvider = ({ children }) => {
         // Update the token in localStorage if a new one was returned
         if (data.token) {
           localStorage.setItem("token", data.token);
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${data.token}`;
+          axios.defaults.headers.common["Authorization"] =
+            `Bearer ${data.token}`;
         }
       } else {
         throw new Error(data.message || "Failed to fetch user");
@@ -72,13 +73,9 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const { data } = await axios.post(`${API_URL}/users/register`, userData);
 
-      if (data.success && data.token) {
-        localStorage.setItem("token", data.token);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-        setUser(data.user);
-        setUserId(data.user?._id);
-        setUserProperties({ role: data.user?.role });
-        return { success: true };
+      if (data.success) {
+        // Do not log in or store token yet; wait for email verification
+        return { success: true, message: data.message };
       } else {
         throw new Error(data.message || "Registration failed");
       }

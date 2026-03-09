@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PropertyImageUpload from "./PropertyImageUpload";
@@ -16,15 +16,20 @@ const EditProperty = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    location: "",
+    location: {
+      address: "",
+      city: "",
+      state: "",
+      country: "",
+    },
     price: "",
-    guests: "",
+    maxGuests: "",
     bedrooms: "",
     bathrooms: "",
     propertyType: "apartment",
     amenities: [],
-    images: [""],
-    houseRules: [""],
+    images: [],
+    rules: [""],
     checkIn: "15:00",
     checkOut: "11:00",
   });
@@ -52,15 +57,7 @@ const EditProperty = () => {
     "BBQ grill",
   ];
 
-  useEffect(() => {
-    if (!user || user.role !== "host") {
-      navigate("/login");
-      return;
-    }
-    fetchProperty();
-  }, [id, user, navigate]);
-
-  const fetchProperty = async () => {
+  const fetchProperty = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -69,25 +66,46 @@ const EditProperty = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
 
-      if (data.success) {
-        const property = data.property;
+      if (!response.ok) {
+        throw new Error(data.message || "Property not found or access denied");
+      }
+
+      const property = data.property || data;
+      if (property && (property._id || property.id)) {
+        const normalizedImages = (property.images || [])
+          .map((img) => normalizeImage(img))
+          .filter(Boolean);
+
+        const locationFromString =
+          typeof property.location === "string"
+            ? property.location.split(",").map((part) => part.trim())
+            : [];
+
+        const normalizedLocation = {
+          address: property.location?.address || locationFromString[0] || "",
+          city: property.location?.city || locationFromString[1] || "",
+          state: property.location?.state || locationFromString[2] || "",
+          country: property.location?.country || locationFromString[3] || "",
+        };
+
         setFormData({
           title: property.title || "",
           description: property.description || "",
-          location: property.location || "",
+          location: normalizedLocation,
           price: property.price?.toString() || "",
-          guests: property.guests?.toString() || "",
+          maxGuests:
+            property.maxGuests?.toString() || property.guests?.toString() || "",
           bedrooms: property.bedrooms?.toString() || "",
           bathrooms: property.bathrooms?.toString() || "",
           propertyType: property.propertyType || "apartment",
           amenities: property.amenities || [],
-          images: property.images?.length ? property.images : [""],
-          houseRules: property.houseRules?.length ? property.houseRules : [""],
+          images: normalizedImages,
+          rules: property.rules?.length ? property.rules : [""],
           checkIn: property.checkIn || "15:00",
           checkOut: property.checkOut || "11:00",
         });
@@ -100,10 +118,31 @@ const EditProperty = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (!user || user.role !== "host") {
+      navigate("/login");
+      return;
+    }
+    fetchProperty();
+  }, [user, navigate, fetchProperty]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if (name.startsWith("location.")) {
+      const locationKey = name.split(".")[1];
+      setFormData((prev) => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [locationKey]: value,
+        },
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -127,23 +166,42 @@ const EditProperty = () => {
   };
 
   const handleRuleChange = (index, value) => {
-    const newRules = [...formData.houseRules];
+    const newRules = [...formData.rules];
     newRules[index] = value;
-    setFormData((prev) => ({ ...prev, houseRules: newRules }));
+    setFormData((prev) => ({ ...prev, rules: newRules }));
   };
 
   const addRuleField = () => {
     setFormData((prev) => ({
       ...prev,
-      houseRules: [...prev.houseRules, ""],
+      rules: [...prev.rules, ""],
     }));
   };
 
   const removeRuleField = (index) => {
-    if (formData.houseRules.length > 1) {
-      const newRules = formData.houseRules.filter((_, i) => i !== index);
-      setFormData((prev) => ({ ...prev, houseRules: newRules }));
+    if (formData.rules.length > 1) {
+      const newRules = formData.rules.filter((_, i) => i !== index);
+      setFormData((prev) => ({ ...prev, rules: newRules }));
     }
+  };
+
+  const normalizeImage = (img) => {
+    if (typeof img === "string") {
+      const url = img.trim();
+      return url ? { url } : null;
+    }
+
+    if (img && typeof img === "object") {
+      const url = typeof img.url === "string" ? img.url.trim() : "";
+      const publicId =
+        typeof img.public_id === "string" ? img.public_id.trim() : "";
+
+      if (!url) return null;
+
+      return publicId ? { url, public_id: publicId } : { url };
+    }
+
+    return null;
   };
 
   const validateForm = () => {
@@ -152,17 +210,24 @@ const EditProperty = () => {
     if (!formData.title.trim()) errors.title = "Title is required";
     if (!formData.description.trim())
       errors.description = "Description is required";
-    if (!formData.location.trim()) errors.location = "Location is required";
+    if (!formData.location.address.trim())
+      errors.location = "Address is required";
+    if (!formData.location.city.trim()) errors.location = "City is required";
+    if (!formData.location.state.trim()) errors.location = "State is required";
+    if (!formData.location.country.trim())
+      errors.location = "Country is required";
     if (!formData.price || formData.price <= 0)
       errors.price = "Valid price is required";
-    if (!formData.guests || formData.guests <= 0)
+    if (!formData.maxGuests || formData.maxGuests <= 0)
       errors.guests = "Number of guests is required";
     if (!formData.bedrooms || formData.bedrooms <= 0)
       errors.bedrooms = "Number of bedrooms is required";
     if (!formData.bathrooms || formData.bathrooms <= 0)
       errors.bathrooms = "Number of bathrooms is required";
 
-    const validImages = formData.images.filter((img) => img.trim());
+    const validImages = formData.images
+      .map((img) => normalizeImage(img))
+      .filter(Boolean);
     if (validImages.length === 0)
       errors.images = "At least one image is required";
 
@@ -184,14 +249,29 @@ const EditProperty = () => {
     setSuccess("");
 
     try {
+      const normalizedImages = formData.images
+        .map((img) => normalizeImage(img))
+        .filter(Boolean);
+
       const propertyData = {
-        ...formData,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         price: parseFloat(formData.price),
-        guests: parseInt(formData.guests),
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
-        images: formData.images.filter((img) => img.trim()),
-        houseRules: formData.houseRules.filter((rule) => rule.trim()),
+        propertyType: formData.propertyType,
+        maxGuests: parseInt(formData.maxGuests, 10),
+        bedrooms: parseInt(formData.bedrooms, 10),
+        bathrooms: parseInt(formData.bathrooms, 10),
+        amenities: formData.amenities,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
+        images: normalizedImages,
+        rules: formData.rules.filter((rule) => rule.trim()),
+        location: {
+          address: formData.location.address.trim(),
+          city: formData.location.city.trim(),
+          state: formData.location.state.trim(),
+          country: formData.location.country.trim(),
+        },
       };
 
       const response = await fetch(
@@ -203,12 +283,20 @@ const EditProperty = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(propertyData),
-        }
+        },
       );
 
       const result = await response.json();
 
-      if (result.success) {
+      const isUpdateSuccessful =
+        response.ok &&
+        !!(
+          result?.property ||
+          (typeof result?.message === "string" &&
+            result.message.toLowerCase().includes("updated"))
+        );
+
+      if (isUpdateSuccessful) {
         setSuccess("Property updated successfully!");
         setTimeout(() => {
           navigate("/host/dashboard");
@@ -218,7 +306,7 @@ const EditProperty = () => {
       }
     } catch (error) {
       console.error("Error updating property:", error);
-      setError("Error updating property. Please try again.");
+      setError(error?.message || "Error updating property. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -297,16 +385,63 @@ const EditProperty = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Location *
+                  Address *
                 </label>
                 <input
                   type="text"
-                  name="location"
-                  value={formData.location}
+                  name="location.address"
+                  value={formData.location.address}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="New York, NY"
+                  placeholder="123 Main Street"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  name="location.city"
+                  value={formData.location.city}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Goa"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  State *
+                </label>
+                <input
+                  type="text"
+                  name="location.state"
+                  value={formData.location.state}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Goa"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Country *
+                </label>
+                <input
+                  type="text"
+                  name="location.country"
+                  value={formData.location.country}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="India"
                 />
               </div>
             </div>
@@ -351,8 +486,8 @@ const EditProperty = () => {
                 </label>
                 <input
                   type="number"
-                  name="guests"
-                  value={formData.guests}
+                  name="maxGuests"
+                  value={formData.maxGuests}
                   onChange={handleInputChange}
                   required
                   min="1"
@@ -478,7 +613,7 @@ const EditProperty = () => {
                 House Rules
               </label>
               <div className="space-y-3">
-                {formData.houseRules.map((rule, index) => (
+                {formData.rules.map((rule, index) => (
                   <div key={index} className="flex gap-2">
                     <input
                       type="text"

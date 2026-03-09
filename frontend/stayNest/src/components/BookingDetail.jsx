@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -10,15 +10,7 @@ const BookingDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    fetchBookingDetails();
-  }, [bookingId, user, navigate]);
-
-  const fetchBookingDetails = async () => {
+  const fetchBookingDetails = useCallback(async () => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/bookings/${bookingId}`,
@@ -26,7 +18,7 @@ const BookingDetail = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -34,14 +26,22 @@ const BookingDetail = () => {
       }
 
       const data = await response.json();
-      setBooking(data);
+      setBooking(data?.booking || data);
     } catch (error) {
       console.error("Error fetching booking:", error);
       setError(error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [bookingId]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    fetchBookingDetails();
+  }, [user, navigate, fetchBookingDetails]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -77,7 +77,8 @@ const BookingDetail = () => {
             Booking Not Found
           </h2>
           <p className="text-gray-600 mb-6">
-            The booking you're looking for doesn't exist or you don't have access to it.
+            The booking you're looking for doesn't exist or you don't have
+            access to it.
           </p>
           <Link
             to="/bookings"
@@ -119,17 +120,23 @@ const BookingDetail = () => {
               <h1 className="text-3xl font-bold text-gray-900">
                 Booking Details
               </h1>
-              <p className="text-gray-600 mt-2">
-                Booking ID: {booking._id}
-              </p>
+              <p className="text-gray-600 mt-2">Booking ID: {booking._id}</p>
             </div>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                booking.status
+                booking.status,
               )}`}
             >
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
             </span>
+          </div>
+          <div className="mt-4">
+            <Link
+              to={`/messages/booking/${booking._id}`}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Message {user?._id === booking?.host?._id ? "Guest" : "Host"}
+            </Link>
           </div>
         </div>
 
@@ -161,7 +168,8 @@ const BookingDetail = () => {
                       "Location"}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {booking.property?.propertyType} • {booking.property?.maxGuests} guests •{" "}
+                    {booking.property?.propertyType} •{" "}
+                    {booking.property?.maxGuests} guests •{" "}
                     {booking.property?.bedrooms} bedrooms
                   </p>
                 </div>
@@ -224,8 +232,10 @@ const BookingDetail = () => {
                   </label>
                   <p className="text-gray-900">
                     {booking.guests?.adults} adults
-                    {booking.guests?.children > 0 && `, ${booking.guests.children} children`}
-                    {booking.guests?.infants > 0 && `, ${booking.guests.infants} infants`}
+                    {booking.guests?.children > 0 &&
+                      `, ${booking.guests.children} children`}
+                    {booking.guests?.infants > 0 &&
+                      `, ${booking.guests.infants} infants`}
                   </p>
                 </div>
                 <div>
@@ -235,7 +245,7 @@ const BookingDetail = () => {
                   <p className="text-gray-900">
                     {Math.ceil(
                       (new Date(booking.checkOut) - new Date(booking.checkIn)) /
-                        (1000 * 60 * 60 * 24)
+                        (1000 * 60 * 60 * 24),
                     )}{" "}
                     nights
                   </p>

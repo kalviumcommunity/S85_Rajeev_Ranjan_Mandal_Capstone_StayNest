@@ -38,10 +38,14 @@ const authLimiter = rateLimit({
 });
 
 // Public routes with auth rate limiting
+
+// Email verification route
+const { verifyEmail } = require("../controllers/userController");
+router.get("/verify/:token", verifyEmail);
+
 router.post("/register", authLimiter, validateUserRegistration, register);
 router.post("/login", authLimiter, validateUserLogin, login);
 router.post("/logout", logout);
-
 
 router.use(auth);
 

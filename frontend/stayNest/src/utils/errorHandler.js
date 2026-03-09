@@ -125,7 +125,7 @@ export const isRetryableError = (error) => {
  * Log error for debugging
  */
 export const logError = (error, context = "") => {
-  if (process.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     console.group(`🚨 Error ${context ? `in ${context}` : ""}`);
     console.error("Original error:", error);
     console.error("Parsed error:", parseError(error));
@@ -176,7 +176,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }) => {
             Go home
           </button>
         </div>
-        {process.env.NODE_ENV === "development" && (
+        {import.meta.env.DEV && (
           <details className="mt-4">
             <summary className="cursor-pointer text-sm text-gray-500">
               Error details (dev only)

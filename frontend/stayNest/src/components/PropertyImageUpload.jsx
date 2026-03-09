@@ -19,7 +19,7 @@ const PropertyImageUpload = ({
     // Initialize previews with existing images
     if (images.length > 0) {
       const initialPreviews = images.map((img) =>
-        typeof img === "string" ? img : img.url || img
+        typeof img === "string" ? img : img.url || img,
       );
       setPreviews(initialPreviews);
     }
@@ -27,7 +27,7 @@ const PropertyImageUpload = ({
     return () => {
       isMountedRef.current = false;
     };
-  }, []);
+  }, [images]);
 
   const handleFileSelect = async (event) => {
     const files = Array.from(event.target.files);
@@ -56,7 +56,7 @@ const PropertyImageUpload = ({
     file,
     maxWidth = 1200,
     maxHeight = 800,
-    quality = 0.8
+    quality = 0.8,
   ) => {
     return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
@@ -106,7 +106,7 @@ const PropertyImageUpload = ({
     ];
     if (!allowedTypes.includes(file.type)) {
       setUploadError(
-        "Please select valid image files (JPEG, PNG, GIF, WebP, BMP)"
+        "Please select valid image files (JPEG, PNG, GIF, WebP, BMP)",
       );
       return;
     }
@@ -136,14 +136,14 @@ const PropertyImageUpload = ({
             });
             console.log(
               `Compressed ${file.name} from ${(file.size / 1024 / 1024).toFixed(
-                2
-              )}MB to ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`
+                2,
+              )}MB to ${(fileToUpload.size / 1024 / 1024).toFixed(2)}MB`,
             );
           }
         } catch (compressionError) {
           console.warn(
             "Client-side compression failed, uploading original:",
-            compressionError
+            compressionError,
           );
           // Continue with original file if compression fails
         }
@@ -174,7 +174,7 @@ const PropertyImageUpload = ({
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: formData,
-        }
+        },
       );
 
       const result = await response.json();

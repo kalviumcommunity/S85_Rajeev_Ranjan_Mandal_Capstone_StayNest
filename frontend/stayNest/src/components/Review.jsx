@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -21,16 +21,11 @@ const Review = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Fetch reviews for the property
-  useEffect(() => {
-    fetchReviews();
-  }, [propertyId]);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/reviews/property/${propertyId}`
+        `${import.meta.env.VITE_API_URL}/reviews/property/${propertyId}`,
       );
       const data = await response.json();
 
@@ -45,7 +40,12 @@ const Review = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [propertyId]);
+
+  // Fetch reviews for the property
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
 
   // Create or Update review
   const handleSubmit = async (e) => {
@@ -87,7 +87,7 @@ const Review = () => {
         setSuccess(
           editingReview
             ? "Review updated successfully!"
-            : "Review submitted successfully!"
+            : "Review submitted successfully!",
         );
         setRating(5);
         setComment("");
@@ -118,7 +118,7 @@ const Review = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -265,8 +265,8 @@ const Review = () => {
                     {isSubmitting
                       ? "Submitting..."
                       : editingReview
-                      ? "Update Review"
-                      : "Submit Review"}
+                        ? "Update Review"
+                        : "Submit Review"}
                   </button>
 
                   {editingReview && (
