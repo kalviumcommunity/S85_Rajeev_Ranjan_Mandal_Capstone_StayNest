@@ -1,4 +1,5 @@
 const express = require("express");
+const http = require("http");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -7,6 +8,10 @@ const session = require("express-session");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const { Server } = require("socket.io");
+const { verifyToken } = require("./utils/jwtUtils");
+const Booking = require("./models/Booking");
+const { setSocketIO } = require("./utils/socket");
 
 // Load environment variables FIRST
 dotenv.config();
@@ -16,6 +21,7 @@ const passport = require("./config/passport");
 
 // Create Express app
 const app = express();
+const httpServer = http.createServer(app);
 
 // Security middleware
 app.use(
@@ -34,7 +40,7 @@ app.use(
         ],
       },
     },
-  })
+  }),
 );
 
 // Rate limiting
@@ -48,7 +54,6 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
 
 // Apply rate limiting
 app.use(generalLimiter);
@@ -75,18 +80,42 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
+const configuredFrontendUrl =
+  process.env.FRONTEND_URL || "http://localhost:5173";
+const allowedOrigins = new Set([
+  configuredFrontendUrl,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+]);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.has(origin)) return true;
+
+  // Allow Vite dev server fallback ports (localhost/127.0.0.1)
+  return /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+};
+
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
@@ -99,6 +128,69 @@ app.use(cors(corsOptions));
 
 // Handle preflight requests
 app.options("*", cors(corsOptions));
+
+// Socket.IO configuration for real-time chat
+const io = new Server(httpServer, {
+  cors: {
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  },
+});
+
+setSocketIO(io);
+
+io.use((socket, next) => {
+  const rawToken =
+    socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+
+  const token = rawToken?.replace("Bearer ", "");
+  if (!token) {
+    return next(new Error("Unauthorized: token missing"));
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded?.id) {
+    return next(new Error("Unauthorized: invalid token"));
+  }
+
+  socket.user = { id: decoded.id };
+  return next();
+});
+
+io.on("connection", (socket) => {
+  const userId = socket.user.id;
+  socket.join(`user:${userId}`);
+
+  socket.on("chat:join-booking", async (bookingId) => {
+    try {
+      const booking = await Booking.findOne({
+        _id: bookingId,
+        $or: [{ guest: userId }, { host: userId }],
+      }).select("_id");
+
+      if (!booking) {
+        socket.emit("chat:error", "Access denied for this booking chat");
+        return;
+      }
+
+      socket.join(`booking:${bookingId}`);
+      socket.emit("chat:booking-joined", bookingId);
+    } catch (error) {
+      socket.emit("chat:error", "Unable to join booking room");
+    }
+  });
+
+  socket.on("chat:leave-booking", (bookingId) => {
+    socket.leave(`booking:${bookingId}`);
+  });
+});
 
 // MongoDB Connection
 mongoose.set("strictQuery", false); // Prepare for Mongoose 7
@@ -120,6 +212,7 @@ const wishlistRoutes = require("./routes/wishListRoutes");
 const fileUploadRoutes = require("./routes/fileUploadRoutes");
 const supportRoutes = require("./routes/support");
 const adminRoutes = require("./routes/adminRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 // Serve static files from uploads directory
 app.use("/uploads", express.static("uploads"));
@@ -134,6 +227,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/upload", fileUploadRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Test route
 app.get("/", (req, res) => {
@@ -187,13 +281,15 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+const server = httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
 // Graceful shutdown function
 const gracefulShutdown = (signal) => {
   console.log(`${signal} received. Shutting down gracefully...`);
+
+  io.close();
 
   server.close(async () => {
     console.log("HTTP server closed");
@@ -211,7 +307,7 @@ const gracefulShutdown = (signal) => {
   // Force close after 10 seconds
   setTimeout(() => {
     console.error(
-      "Could not close connections in time, forcefully shutting down"
+      "Could not close connections in time, forcefully shutting down",
     );
     process.exit(1);
   }, 10000);

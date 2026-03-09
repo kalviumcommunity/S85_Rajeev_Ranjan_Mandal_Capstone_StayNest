@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import ReactGA from 'react-ga4';
+import ReactGA from "react-ga4";
 
 import GoogleOAuthButton from "./GoogleOAuthButton";
 
@@ -82,18 +82,19 @@ const Register = () => {
     if (result.success) {
       // Track registration event
       ReactGA.event({
-        category: 'User',
-        action: 'Register',
-        label: 'New User Registration',
-        value: 1
+        category: "User",
+        action: "Register",
+        label: "New User Registration",
+        value: 1,
       });
       setSuccessMessage(
-        "Account created successfully! Redirecting to home page..."
+        result.message ||
+          "Registration successful! Please check your email to verify your account."
       );
-      // Delay redirect to show success message
+      // Optionally, redirect to login after a delay
       setTimeout(() => {
-        navigate("/"); // Redirect to home on successful registration
-      }, 1500);
+        navigate("/login");
+      }, 3000);
     }
   };
 

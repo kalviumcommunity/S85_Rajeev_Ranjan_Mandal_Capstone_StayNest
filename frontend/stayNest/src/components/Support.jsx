@@ -143,14 +143,14 @@ const Support = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(emailForm),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (data.success) {
         setSubmitMessage(
-          "✅ Your query has been submitted successfully! We'll get back to you within 2 hours."
+          "✅ Your query has been submitted successfully! We'll get back to you within 2 hours.",
         );
         setEmailForm({
           name: "",
@@ -162,12 +162,12 @@ const Support = () => {
         setTimeout(() => setShowEmailModal(false), 3000);
       } else {
         setSubmitMessage(
-          "❌ " + (data.message || "Failed to submit query. Please try again.")
+          "❌ " + (data.message || "Failed to submit query. Please try again."),
         );
       }
-    } catch (error) {
+    } catch {
       setSubmitMessage(
-        "❌ Network error. Please check your connection and try again."
+        "❌ Network error. Please check your connection and try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -188,14 +188,14 @@ const Support = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(phoneForm),
-        }
+        },
       );
 
       const data = await response.json();
 
       if (data.success) {
         setSubmitMessage(
-          "✅ Phone support request submitted! We'll call you back within 30 minutes."
+          "✅ Phone support request submitted! We'll call you back within 30 minutes.",
         );
         setPhoneForm({
           name: "",
@@ -208,12 +208,12 @@ const Support = () => {
       } else {
         setSubmitMessage(
           "❌ " +
-            (data.message || "Failed to submit request. Please try again.")
+            (data.message || "Failed to submit request. Please try again."),
         );
       }
-    } catch (error) {
+    } catch {
       setSubmitMessage(
-        "❌ Network error. Please check your connection and try again."
+        "❌ Network error. Please check your connection and try again.",
       );
     } finally {
       setIsSubmitting(false);

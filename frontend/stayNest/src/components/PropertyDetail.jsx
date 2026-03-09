@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -20,22 +20,14 @@ const PropertyDetail = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [nights, setNights] = useState(0);
 
-  useEffect(() => {
-    fetchProperty();
-  }, [id]);
-
-  useEffect(() => {
-    calculatePrice();
-  }, [checkIn, checkOut, property]);
-
-  const fetchProperty = async () => {
+  const fetchProperty = useCallback(async () => {
     try {
       setLoading(true);
       console.log("Fetching property with ID:", id);
       console.log("API URL:", import.meta.env.VITE_API_URL);
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/properties/${id}`
+        `${import.meta.env.VITE_API_URL}/properties/${id}`,
       );
 
       console.log("Response status:", response.status);
@@ -53,9 +45,9 @@ const PropertyDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const calculatePrice = () => {
+  const calculatePrice = useCallback(() => {
     if (!checkIn || !checkOut || !property) return;
 
     const startDate = new Date(checkIn);
@@ -72,7 +64,15 @@ const PropertyDetail = () => {
 
       setTotalPrice(basePrice + cleaningFee + serviceFee + taxes);
     }
-  };
+  }, [checkIn, checkOut, property]);
+
+  useEffect(() => {
+    fetchProperty();
+  }, [fetchProperty]);
+
+  useEffect(() => {
+    calculatePrice();
+  }, [calculatePrice]);
 
   const handleBooking = () => {
     if (!user) {
@@ -188,7 +188,7 @@ const PropertyDetail = () => {
                   <button
                     onClick={() =>
                       setCurrentImageIndex((prev) =>
-                        prev === 0 ? property.images.length - 1 : prev - 1
+                        prev === 0 ? property.images.length - 1 : prev - 1,
                       )
                     }
                     className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-colors"
@@ -210,7 +210,7 @@ const PropertyDetail = () => {
                   <button
                     onClick={() =>
                       setCurrentImageIndex((prev) =>
-                        prev === property.images.length - 1 ? 0 : prev + 1
+                        prev === property.images.length - 1 ? 0 : prev + 1,
                       )
                     }
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 transition-colors"
@@ -397,7 +397,7 @@ const PropertyDetail = () => {
                     <p>
                       Host since{" "}
                       {new Date(
-                        property.host?.createdAt || Date.now()
+                        property.host?.createdAt || Date.now(),
                       ).getFullYear()}
                     </p>
                     <p>{property.host?.email}</p>
@@ -547,7 +547,7 @@ const PropertyDetail = () => {
                           type="button"
                           onClick={() =>
                             setAdults(
-                              Math.min(property.maxGuests || 10, adults + 1)
+                              Math.min(property.maxGuests || 10, adults + 1),
                             )
                           }
                           className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400"
@@ -660,7 +660,7 @@ const PropertyDetail = () => {
                   <div className="text-sm text-gray-600">
                     Host since{" "}
                     {new Date(
-                      property.host?.createdAt || Date.now()
+                      property.host?.createdAt || Date.now(),
                     ).getFullYear()}
                   </div>
                 </div>

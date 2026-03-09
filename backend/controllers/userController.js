@@ -1,6 +1,46 @@
+// Email verification handler
+const jwt = require("jsonwebtoken");
+// const User = require("../models/User"); // Duplicate removed
+const verifyEmail = async (req, res) => {
+  const { token } = req.params;
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "your_jwt_secret",
+    );
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid verification link." });
+    }
+    if (user.isVerified) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Email already verified." });
+    }
+    user.isVerified = true;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully! You can now log in.",
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid or expired verification link.",
+    });
+  }
+};
 const User = require("../models/User");
 const { generateToken } = require("../utils/jwtUtils");
 const bcrypt = require("bcryptjs");
+const {
+  validateEmailExistsForSignup,
+} = require("../services/emailExistenceService");
+const {
+  sendVerificationEmail,
+} = require("../services/emailVerificationService");
 
 // Register a new user
 const register = async (req, res) => {
@@ -19,6 +59,15 @@ const register = async (req, res) => {
       return res
         .status(400)
         .json({ message: "Please provide all required fields" });
+    }
+
+    // Enforce domain-level email deliverability before creating the user
+    const emailValidation = await validateEmailExistsForSignup(email);
+    if (!emailValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: emailValidation.reason || "Please use a valid email address",
+      });
     }
 
     // Check if user already exists
@@ -53,29 +102,44 @@ const register = async (req, res) => {
 
     // Create new user
     const user = new User(userData);
-
     await user.save();
 
-    // Generate JWT token
-    const token = generateToken(user._id);
+    // Generate email verification token (expires in 1 hour)
+    const jwt = require("jsonwebtoken");
+    const verificationToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1h" },
+    );
+
+    // Send verification email (required for successful signup)
+    const backendUrl =
+      process.env.HOST && process.env.PORT
+        ? `http://${process.env.HOST}:${process.env.PORT}`
+        : "http://localhost:5000";
+    const verificationUrl = `${backendUrl}/api/users/verify/${verificationToken}`;
+    try {
+      await sendVerificationEmail(user.email, user.name, verificationUrl);
+    } catch (e) {
+      console.error("Error sending verification email:", e);
+      // Remove the unverified account if we cannot deliver verification mail.
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        success: false,
+        message:
+          "Could not send verification email. Please try again with a valid email address.",
+      });
+    }
 
     // Remove password from response
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    // Set HTTP-only cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message:
+        "Registration successful! Please check your email to verify your account.",
       user: userResponse,
-      token,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -158,6 +222,14 @@ const login = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid credentials",
+      });
+    }
+
+    // Check if email is verified
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email before logging in.",
       });
     }
 
@@ -293,7 +365,7 @@ const updateProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
       { name, email, phone, profilePicture },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password");
 
     if (!updatedUser) {
@@ -430,7 +502,7 @@ const becomeHost = async (req, res) => {
         "hostDetails.averageRating": 0,
         "hostDetails.totalReviews": 0,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password");
 
     if (!updatedUser) {
@@ -457,6 +529,7 @@ const becomeHost = async (req, res) => {
 
 module.exports = {
   register,
+  verifyEmail,
   login,
   logout,
   getCurrentUser,

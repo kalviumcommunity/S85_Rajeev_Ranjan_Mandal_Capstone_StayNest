@@ -1,22 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import PropertyImageUpload from "./PropertyImageUpload";
-import { Formik, Form, Field } from 'formik';
-import { propertyValidationSchema } from '../validations/propertyValidation';
-import { toast } from 'react-toastify';
+import { Formik, Form, Field } from "formik";
+import { propertyValidationSchema } from "../validations/propertyValidation";
+import { toast } from "react-toastify";
 
 const AddProperty = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
-  const propertyTypes = [
-    "apartment",
-    "house",
-    "villa",
-    "cottage",
-    "other"
-  ];
+  const propertyTypes = ["apartment", "house", "villa", "cottage", "other"];
 
   const availableAmenities = [
     "WiFi",
@@ -52,7 +44,7 @@ const AddProperty = () => {
       address: "",
       city: "",
       state: "",
-      country: ""
+      country: "",
     },
     price: "",
     propertyType: "",
@@ -63,7 +55,7 @@ const AddProperty = () => {
     images: [],
     rules: [],
     cancellationPolicy: "moderate",
-    availability: true
+    availability: true,
   };
 
   const scrollToError = (errors) => {
@@ -71,25 +63,31 @@ const AddProperty = () => {
     if (firstError) {
       const element = document.querySelector(`[name="${firstError}"]`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
   };
 
-  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/properties`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/properties`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(values),
         },
-        body: JSON.stringify(values),
-      });
+      );
 
       const result = await response.json();
 
-      if (result.property && result.message === "Property created successfully") {
+      if (
+        result.property &&
+        result.message === "Property created successfully"
+      ) {
         toast.success("Property added successfully!");
         navigate("/host/dashboard");
       } else {
@@ -116,17 +114,28 @@ const AddProperty = () => {
         validateOnBlur={true}
         validateOnChange={false}
       >
-        {({ errors, touched, isSubmitting, setFieldValue, values, validateForm, handleSubmit: formikHandleSubmit }) => (
-          <Form className="space-y-6" onSubmit={async (e) => {
-            e.preventDefault();
-            const errors = await validateForm();
-            if (Object.keys(errors).length > 0) {
-              scrollToError(errors);
-              toast.error('Please fix the validation errors');
-              return;
-            }
-            formikHandleSubmit(e);
-          }}>
+        {({
+          errors,
+          touched,
+          isSubmitting,
+          setFieldValue,
+          values,
+          validateForm,
+          handleSubmit: formikHandleSubmit,
+        }) => (
+          <Form
+            className="space-y-6"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const errors = await validateForm();
+              if (Object.keys(errors).length > 0) {
+                scrollToError(errors);
+                toast.error("Please fix the validation errors");
+                return;
+              }
+              formikHandleSubmit(e);
+            }}
+          >
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -135,11 +144,13 @@ const AddProperty = () => {
                 <Field
                   name="title"
                   type="text"
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.title && touched.title ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.title && touched.title ? "border-red-500" : "border-gray-300"}`}
                   placeholder="e.g., Luxury Downtown Apartment"
                 />
                 {errors.title && touched.title && (
-                  <div className="text-red-500 text-sm mt-1">{errors.title}</div>
+                  <div className="text-red-500 text-sm mt-1">
+                    {errors.title}
+                  </div>
                 )}
               </div>
 
@@ -151,11 +162,13 @@ const AddProperty = () => {
                   as="textarea"
                   name="description"
                   rows="4"
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.description && touched.description ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.description && touched.description ? "border-red-500" : "border-gray-300"}`}
                   placeholder="Describe your property..."
                 />
                 {errors.description && touched.description && (
-                  <div className="text-red-500 text-sm mt-1">{errors.description}</div>
+                  <div className="text-red-500 text-sm mt-1">
+                    {errors.description}
+                  </div>
                 )}
               </div>
 
@@ -167,11 +180,13 @@ const AddProperty = () => {
                   <Field
                     name="location.address"
                     type="text"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.address && touched.location?.address ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.address && touched.location?.address ? "border-red-500" : "border-gray-300"}`}
                     placeholder="Street address"
                   />
                   {errors.location?.address && touched.location?.address && (
-                    <div className="text-red-500 text-sm mt-1">{errors.location.address}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.location.address}
+                    </div>
                   )}
                 </div>
 
@@ -182,11 +197,13 @@ const AddProperty = () => {
                   <Field
                     name="location.city"
                     type="text"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.city && touched.location?.city ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.city && touched.location?.city ? "border-red-500" : "border-gray-300"}`}
                     placeholder="City"
                   />
                   {errors.location?.city && touched.location?.city && (
-                    <div className="text-red-500 text-sm mt-1">{errors.location.city}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.location.city}
+                    </div>
                   )}
                 </div>
 
@@ -197,11 +214,13 @@ const AddProperty = () => {
                   <Field
                     name="location.state"
                     type="text"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.state && touched.location?.state ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.state && touched.location?.state ? "border-red-500" : "border-gray-300"}`}
                     placeholder="State"
                   />
                   {errors.location?.state && touched.location?.state && (
-                    <div className="text-red-500 text-sm mt-1">{errors.location.state}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.location.state}
+                    </div>
                   )}
                 </div>
 
@@ -212,11 +231,13 @@ const AddProperty = () => {
                   <Field
                     name="location.country"
                     type="text"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.country && touched.location?.country ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.location?.country && touched.location?.country ? "border-red-500" : "border-gray-300"}`}
                     placeholder="Country"
                   />
                   {errors.location?.country && touched.location?.country && (
-                    <div className="text-red-500 text-sm mt-1">{errors.location.country}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.location.country}
+                    </div>
                   )}
                 </div>
               </div>
@@ -229,7 +250,7 @@ const AddProperty = () => {
                   <Field
                     as="select"
                     name="propertyType"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.propertyType && touched.propertyType ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.propertyType && touched.propertyType ? "border-red-500" : "border-gray-300"}`}
                   >
                     <option value="">Select property type</option>
                     {propertyTypes.map((type) => (
@@ -239,7 +260,9 @@ const AddProperty = () => {
                     ))}
                   </Field>
                   {errors.propertyType && touched.propertyType && (
-                    <div className="text-red-500 text-sm mt-1">{errors.propertyType}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.propertyType}
+                    </div>
                   )}
                 </div>
 
@@ -251,11 +274,13 @@ const AddProperty = () => {
                     name="price"
                     type="number"
                     min="0"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.price && touched.price ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.price && touched.price ? "border-red-500" : "border-gray-300"}`}
                     placeholder="150"
                   />
                   {errors.price && touched.price && (
-                    <div className="text-red-500 text-sm mt-1">{errors.price}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.price}
+                    </div>
                   )}
                 </div>
               </div>
@@ -269,11 +294,13 @@ const AddProperty = () => {
                     name="maxGuests"
                     type="number"
                     min="1"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.maxGuests && touched.maxGuests ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.maxGuests && touched.maxGuests ? "border-red-500" : "border-gray-300"}`}
                     placeholder="4"
                   />
                   {errors.maxGuests && touched.maxGuests && (
-                    <div className="text-red-500 text-sm mt-1">{errors.maxGuests}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.maxGuests}
+                    </div>
                   )}
                 </div>
 
@@ -285,11 +312,13 @@ const AddProperty = () => {
                     name="bedrooms"
                     type="number"
                     min="0"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.bedrooms && touched.bedrooms ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.bedrooms && touched.bedrooms ? "border-red-500" : "border-gray-300"}`}
                     placeholder="2"
                   />
                   {errors.bedrooms && touched.bedrooms && (
-                    <div className="text-red-500 text-sm mt-1">{errors.bedrooms}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.bedrooms}
+                    </div>
                   )}
                 </div>
 
@@ -302,11 +331,13 @@ const AddProperty = () => {
                     type="number"
                     min="0"
                     step="0.5"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.bathrooms && touched.bathrooms ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.bathrooms && touched.bathrooms ? "border-red-500" : "border-gray-300"}`}
                     placeholder="2"
                   />
                   {errors.bathrooms && touched.bathrooms && (
-                    <div className="text-red-500 text-sm mt-1">{errors.bathrooms}</div>
+                    <div className="text-red-500 text-sm mt-1">
+                      {errors.bathrooms}
+                    </div>
                   )}
                 </div>
               </div>
@@ -320,9 +351,11 @@ const AddProperty = () => {
                     <label
                       key={amenity}
                       className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors
-                        ${values.amenities.includes(amenity)
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-300 hover:border-gray-400'}`}
+                        ${
+                          values.amenities.includes(amenity)
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
                     >
                       <Field
                         type="checkbox"
@@ -332,9 +365,11 @@ const AddProperty = () => {
                       />
                       <div
                         className={`w-4 h-4 rounded border-2 mr-2 flex items-center justify-center
-                          ${values.amenities.includes(amenity)
-                            ? 'border-blue-500 bg-blue-500'
-                            : 'border-gray-300'}`}
+                          ${
+                            values.amenities.includes(amenity)
+                              ? "border-blue-500 bg-blue-500"
+                              : "border-gray-300"
+                          }`}
                       >
                         {values.amenities.includes(amenity) && (
                           <svg
@@ -355,7 +390,9 @@ const AddProperty = () => {
                   ))}
                 </div>
                 {errors.amenities && touched.amenities && (
-                  <div className="text-red-500 text-sm mt-2">{errors.amenities}</div>
+                  <div className="text-red-500 text-sm mt-2">
+                    {errors.amenities}
+                  </div>
                 )}
               </div>
 
@@ -365,12 +402,14 @@ const AddProperty = () => {
                 </label>
                 <PropertyImageUpload
                   images={values.images}
-                  onImagesChange={(images) => setFieldValue('images', images)}
+                  onImagesChange={(images) => setFieldValue("images", images)}
                   maxImages={10}
                   required={true}
                 />
                 {errors.images && touched.images && (
-                  <div className="text-red-500 text-sm mt-2">{errors.images}</div>
+                  <div className="text-red-500 text-sm mt-2">
+                    {errors.images}
+                  </div>
                 )}
               </div>
             </div>
@@ -387,9 +426,9 @@ const AddProperty = () => {
                 type="submit"
                 disabled={isSubmitting}
                 className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors
-                  ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                {isSubmitting ? 'Adding Property...' : 'Add Property'}
+                {isSubmitting ? "Adding Property..." : "Add Property"}
               </button>
             </div>
           </Form>

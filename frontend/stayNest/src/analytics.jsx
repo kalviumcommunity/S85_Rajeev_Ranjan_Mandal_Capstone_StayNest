@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 // Set the user ID in Google Analytics
 export const setUserId = (userId) => {
   try {
@@ -26,7 +28,7 @@ import * as React from "react";
 
 // Error boundary for analytics
 const AnalyticsErrorBoundary = ({ children }) => {
-  const [hasError, setHasError] = React.useState(false);
+  const [hasError] = React.useState(false);
 
   if (hasError) {
     // If there's an error, just return null (analytics won't work but app will)
@@ -41,7 +43,7 @@ export const initializeAnalytics = () => {
     if (import.meta.env.VITE_GOOGLE_ANALYTICS_ID) {
       console.log(
         "Initializing Google Analytics with ID:",
-        import.meta.env.VITE_GOOGLE_ANALYTICS_ID
+        import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
       );
       ReactGA.initialize(import.meta.env.VITE_GOOGLE_ANALYTICS_ID, {
         debug_mode: true,

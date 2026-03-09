@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { io } from "socket.io-client";
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -8,6 +9,51 @@ const Navbar = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/messages/unread-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setUnreadCount(data.unreadCount || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching unread message count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+    const socket = io(
+      (import.meta.env.VITE_API_URL || "").replace(/\/api$/, ""),
+      {
+        auth: {
+          token: localStorage.getItem("token"),
+        },
+      },
+    );
+
+    socket.on("chat:unread-count-updated", (count) => {
+      if (typeof count === "number") {
+        setUnreadCount(count);
+      }
+    });
+
+    return () => socket.disconnect();
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     await logout();
@@ -116,6 +162,11 @@ const Navbar = () => {
                     } px-3 py-2 text-sm font-medium transition duration-200`}
                   >
                     My Bookings
+                    {unreadCount > 0 && (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Link>
                   <div className="relative">
                     <button
@@ -339,6 +390,11 @@ const Navbar = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Bookings
+                  {unreadCount > 0 && (
+                    <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
                 <button
                   onClick={() => {

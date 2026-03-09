@@ -1,64 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 
 const PropertyManagement = () => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    fetchProperties();
-  }, [currentPage, statusFilter]);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     try {
       const params = new URLSearchParams({
         page: currentPage,
         limit: 10,
-        ...(statusFilter !== 'all' && { status: statusFilter }),
-        ...(searchTerm && { search: searchTerm })
+        ...(statusFilter !== "all" && { status: statusFilter }),
+        ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/properties?${params}`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/admin/properties?${params}`,
+      );
       setProperties(response.data.data.properties);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter, searchTerm]);
 
-  const approveProperty = async (propertyId, approved, rejectionReason = '') => {
+  useEffect(() => {
+    fetchProperties();
+  }, [fetchProperties]);
+
+  const approveProperty = async (
+    propertyId,
+    approved,
+    rejectionReason = "",
+  ) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/admin/properties/${propertyId}/approve`, { 
-        approved, 
-        rejectionReason 
-      });
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/admin/properties/${propertyId}/approve`,
+        {
+          approved,
+          rejectionReason,
+        },
+      );
       fetchProperties(); // Refresh the list
-      alert(`Property ${approved ? 'approved' : 'rejected'} successfully!`);
+      alert(`Property ${approved ? "approved" : "rejected"} successfully!`);
     } catch (error) {
-      console.error('Error approving property:', error);
-      alert('Error processing property approval');
+      console.error("Error approving property:", error);
+      alert("Error processing property approval");
     }
   };
 
   const deleteProperty = async (propertyId) => {
-    if (window.confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this property? This action cannot be undone.",
+      )
+    ) {
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/admin/properties/${propertyId}`);
+        await axios.delete(
+          `${import.meta.env.VITE_API_URL}/admin/properties/${propertyId}`,
+        );
         fetchProperties(); // Refresh the list
-        alert('Property deleted successfully!');
+        alert("Property deleted successfully!");
       } catch (error) {
-        console.error('Error deleting property:', error);
-        alert('Error deleting property');
+        console.error("Error deleting property:", error);
+        alert("Error deleting property");
       }
     }
   };
 
   const handleReject = (propertyId) => {
-    const reason = prompt('Please provide a reason for rejection:');
+    const reason = prompt("Please provide a reason for rejection:");
     if (reason) {
       approveProperty(propertyId, false, reason);
     }
@@ -69,16 +84,19 @@ const PropertyManagement = () => {
     fetchProperties();
   };
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-medium text-gray-900">Property Management</h3>
+        <h3 className="text-lg font-medium text-gray-900">
+          Property Management
+        </h3>
         <div className="flex space-x-4">
           {/* Search */}
           <div className="flex">
@@ -96,7 +114,7 @@ const PropertyManagement = () => {
               Search
             </button>
           </div>
-          
+
           {/* Status Filter */}
           <select
             value={statusFilter}
@@ -113,7 +131,10 @@ const PropertyManagement = () => {
 
       <div className="grid gap-6">
         {properties.map((property) => (
-          <div key={property._id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+          <div
+            key={property._id}
+            className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+          >
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-start space-x-4">
@@ -134,19 +155,27 @@ const PropertyManagement = () => {
 
                   {/* Property Details */}
                   <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-gray-900">{property.title}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{property.description?.substring(0, 100)}...</p>
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      {property.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {property.description?.substring(0, 100)}...
+                    </p>
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-500">
-                        📍 {property.location?.address}, {property.location?.city}
+                        📍 {property.location?.address},{" "}
+                        {property.location?.city}
                       </p>
                       <p className="text-sm text-gray-500">
-                        🏠 {property.propertyType} • {property.bedrooms} bed • {property.bathrooms} bath • {property.maxGuests} guests
+                        🏠 {property.propertyType} • {property.bedrooms} bed •{" "}
+                        {property.bathrooms} bath • {property.maxGuests} guests
                       </p>
                       <p className="text-sm text-gray-500">
                         👤 Host: {property.host?.name} ({property.host?.email})
                       </p>
-                      <p className="text-lg font-bold text-green-600">${property.price}/night</p>
+                      <p className="text-lg font-bold text-green-600">
+                        ${property.price}/night
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -154,16 +183,22 @@ const PropertyManagement = () => {
                 {/* Status and Actions */}
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <span className={`px-3 py-1 text-sm rounded-full ${
-                      property.isApproved === true ? 'bg-green-100 text-green-800' :
-                      property.isApproved === false ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {property.isApproved === true ? '✅ Approved' :
-                       property.isApproved === false ? '❌ Rejected' :
-                       '⏳ Pending Approval'}
+                    <span
+                      className={`px-3 py-1 text-sm rounded-full ${
+                        property.isApproved === true
+                          ? "bg-green-100 text-green-800"
+                          : property.isApproved === false
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {property.isApproved === true
+                        ? "✅ Approved"
+                        : property.isApproved === false
+                          ? "❌ Rejected"
+                          : "⏳ Pending Approval"}
                     </span>
-                    
+
                     {property.rejectionReason && (
                       <span className="text-sm text-red-600">
                         Reason: {property.rejectionReason}
@@ -180,7 +215,7 @@ const PropertyManagement = () => {
                         ✅ Approve
                       </button>
                     )}
-                    
+
                     {property.isApproved !== false && (
                       <button
                         onClick={() => handleReject(property._id)}
@@ -189,7 +224,7 @@ const PropertyManagement = () => {
                         ❌ Reject
                       </button>
                     )}
-                    
+
                     <button
                       onClick={() => deleteProperty(property._id)}
                       className="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600 transition-colors"
@@ -214,7 +249,7 @@ const PropertyManagement = () => {
       {/* Pagination */}
       <div className="flex justify-between items-center mt-8">
         <button
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
           className="bg-gray-300 text-gray-700 px-4 py-2 rounded disabled:opacity-50 hover:bg-gray-400 transition-colors"
         >
@@ -224,7 +259,7 @@ const PropertyManagement = () => {
           Page {currentPage}
         </span>
         <button
-          onClick={() => setCurrentPage(prev => prev + 1)}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
         >
           Next →

@@ -32,7 +32,7 @@ const UserBookings = () => {
       }
 
       const data = await response.json();
-      setBookings(data);
+      setBookings(data?.bookings || data || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       setError(error.message);
@@ -63,12 +63,12 @@ const UserBookings = () => {
       case "upcoming":
         return bookings.filter(
           (booking) =>
-            new Date(booking.checkIn) > now && booking.status !== "cancelled"
+            new Date(booking.checkIn) > now && booking.status !== "cancelled",
         );
       case "past":
         return bookings.filter(
           (booking) =>
-            new Date(booking.checkOut) < now || booking.status === "completed"
+            new Date(booking.checkOut) < now || booking.status === "completed",
         );
       case "cancelled":
         return bookings.filter((booking) => booking.status === "cancelled");
@@ -226,7 +226,7 @@ const UserBookings = () => {
                       <div className="flex flex-col items-end space-y-1">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                            booking.status
+                            booking.status,
                           )}`}
                         >
                           {booking.status.charAt(0).toUpperCase() +
@@ -252,6 +252,12 @@ const UserBookings = () => {
                         className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                       >
                         View Details
+                      </Link>
+                      <Link
+                        to={`/messages/booking/${booking._id}`}
+                        className="inline-flex items-center px-3 py-2 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50"
+                      >
+                        Message
                       </Link>
                       {booking.status === "confirmed" &&
                         new Date(booking.checkIn) > new Date() && (

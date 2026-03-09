@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 const HostDashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [stats, setStats] = useState({
     totalProperties: 0,
@@ -23,7 +20,7 @@ const HostDashboard = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          }
+          },
         );
 
         const result = await response.json();
@@ -36,17 +33,17 @@ const HostDashboard = () => {
           const totalProperties = userProperties.length;
           const totalBookings = userProperties.reduce(
             (sum, prop) => sum + (prop.reviews || 0),
-            0
+            0,
           );
           const totalRevenue = userProperties.reduce(
             (sum, prop) => sum + prop.price * (prop.reviews || 0),
-            0
+            0,
           );
           const averageRating =
             userProperties.length > 0
               ? userProperties.reduce(
                   (sum, prop) => sum + (prop.rating || 0),
-                  0
+                  0,
                 ) / userProperties.length
               : 0;
 
@@ -83,14 +80,14 @@ const HostDashboard = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          }
+          },
         );
 
         const result = await response.json();
 
         if (result.success) {
           const updatedProperties = properties.filter(
-            (prop) => prop.id !== propertyId
+            (prop) => (prop._id || prop.id) !== propertyId,
           );
           setProperties(updatedProperties);
           alert("Property deleted successfully!");
@@ -104,32 +101,27 @@ const HostDashboard = () => {
     }
   };
 
-  const toggleFeatured = async (propertyId) => {
-    try {
-      const property = properties.find((prop) => prop.id === propertyId);
-      const response = await fetch(`/api/properties/${propertyId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ featured: !property.featured }),
-      });
+  const getPropertyLocationText = (location) => {
+    if (!location) return "Location not provided";
+    if (typeof location === "string") return location;
 
-      const result = await response.json();
+    const parts = [
+      location.address,
+      location.city,
+      location.state,
+      location.country,
+    ].filter((part) => typeof part === "string" && part.trim().length > 0);
 
-      if (result.success) {
-        const updatedProperties = properties.map((prop) =>
-          prop.id === propertyId ? { ...prop, featured: !prop.featured } : prop
-        );
-        setProperties(updatedProperties);
-      } else {
-        throw new Error(result.message || "Failed to update property");
-      }
-    } catch (error) {
-      console.error("Error updating property:", error);
-      alert("Error updating property. Please try again.");
-    }
+    return parts.length > 0 ? parts.join(", ") : "Location not provided";
+  };
+
+  const getPropertyImageSrc = (property) => {
+    const firstImage = property?.images?.[0];
+    const src = typeof firstImage === "string" ? firstImage : firstImage?.url;
+
+    return src && src.trim().length > 0
+      ? src
+      : "https://via.placeholder.com/100x80";
   };
 
   return (
@@ -357,16 +349,11 @@ const HostDashboard = () => {
           ) : (
             <div className="divide-y divide-gray-200">
               {properties.map((property) => (
-                <div key={property._id} className="p-6">
+                <div key={property._id || property.id} className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <img
-                        src={
-                          (property.images &&
-                            property.images[0] &&
-                            property.images[0].url) ||
-                          "https://via.placeholder.com/100x80"
-                        }
+                        src={getPropertyImageSrc(property)}
                         alt={property.title}
                         className="w-20 h-16 object-cover rounded-lg"
                       />
@@ -375,9 +362,7 @@ const HostDashboard = () => {
                           {property.title}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          {typeof property.location === "string"
-                            ? property.location
-                            : `${property.location.city}, ${property.location.state}`}
+                          {getPropertyLocationText(property.location)}
                         </p>
                         <div className="flex items-center mt-1">
                           <span className="text-sm text-gray-500">
@@ -396,39 +381,24 @@ const HostDashboard = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      {property.featured && (
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                          Featured
-                        </span>
-                      )}
-
-                      <button
-                        onClick={() => toggleFeatured(property._id)}
-                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                          property.featured
-                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                            : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {property.featured ? "Unfeature" : "Feature"}
-                      </button>
-
                       <Link
-                        to={`/properties/${property._id}`}
+                        to={`/properties/${property._id || property.id}`}
                         className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200 transition-colors"
                       >
                         View
                       </Link>
 
                       <Link
-                        to={`/host/edit-property/${property._id}`}
+                        to={`/host/edit-property/${property._id || property.id}`}
                         className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full hover:bg-purple-200 transition-colors"
                       >
                         Edit
                       </Link>
 
                       <button
-                        onClick={() => deleteProperty(property._id)}
+                        onClick={() =>
+                          deleteProperty(property._id || property.id)
+                        }
                         className="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full hover:bg-red-200 transition-colors"
                       >
                         Delete
