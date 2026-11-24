@@ -114,9 +114,10 @@ const register = async (req, res) => {
 
     // Send verification email (required for successful signup)
     const backendUrl =
-      process.env.HOST && process.env.PORT
+      process.env.BACKEND_URL ||
+      (process.env.HOST && process.env.PORT
         ? `http://${process.env.HOST}:${process.env.PORT}`
-        : "http://localhost:5000";
+        : "http://localhost:5000");
     const verificationUrl = `${backendUrl}/api/users/verify/${verificationToken}`;
     try {
       await sendVerificationEmail(user.email, user.name, verificationUrl);
