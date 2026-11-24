@@ -23,6 +23,10 @@ const passport = require("./config/passport");
 const app = express();
 const httpServer = http.createServer(app);
 
+// Trust proxy - required for Render/Heroku/any reverse proxy deployment
+// so that express-rate-limit and req.ip work correctly
+app.set("trust proxy", 1);
+
 // Security middleware
 app.use(
   helmet({
