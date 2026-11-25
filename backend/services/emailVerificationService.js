@@ -36,7 +36,12 @@ const sendVerificationEmail = async (to, name, verificationUrl) => {
   const htmlContent = buildVerificationHtml(name, verificationUrl);
 
   // Use Brevo HTTP API when BREVO_API_KEY is configured (works on Render free tier)
-  const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+  const rawBrevoKey = process.env.BREVO_API_KEY?.trim();
+  const brevoApiKey = rawBrevoKey
+    ? rawBrevoKey.startsWith("xkeysib-")
+      ? rawBrevoKey
+      : `xkeysib-${rawBrevoKey}`
+    : "";
   if (brevoApiKey) {
     await axios.post(
       "https://api.brevo.com/v3/smtp/email",
