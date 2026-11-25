@@ -1,3 +1,4 @@
+const axios = require("axios");
 const nodemailer = require("nodemailer");
 
 const createTransporter = () => {
@@ -10,13 +11,7 @@ const createTransporter = () => {
   });
 };
 
-const sendVerificationEmail = async (to, name, verificationUrl) => {
-  const transporter = createTransporter();
-  const mailOptions = {
-    from: process.env.EMAIL_USER || "mandalrajeev3@gmail.com",
-    to,
-    subject: "Verify your StayNest account",
-    html: `
+const buildVerificationHtml = (name, verificationUrl) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
           <h1 style="margin: 0; font-size: 24px;">🏠 Welcome to StayNest!</h1>
@@ -33,9 +28,46 @@ const sendVerificationEmail = async (to, name, verificationUrl) => {
           <p style="margin: 0;">This is an automated message from StayNest.</p>
         </div>
       </div>
-    `,
-  };
-  await transporter.sendMail(mailOptions);
+    `;
+
+const sendVerificationEmail = async (to, name, verificationUrl) => {
+  const senderEmail = process.env.EMAIL_USER || "mandalrajeev3@gmail.com";
+  const subject = "Verify your StayNest account";
+  const htmlContent = buildVerificationHtml(name, verificationUrl);
+
+  // Use Brevo HTTP API when BREVO_API_KEY is configured (works on Render free tier)
+  if (process.env.BREVO_API_KEY) {
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "StayNest",
+          email: senderEmail,
+        },
+        to: [{ email: to, name }],
+        subject,
+        htmlContent,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 15000,
+      }
+    );
+    return;
+  }
+
+  // Fallback to Gmail SMTP for local development
+  const transporter = createTransporter();
+  await transporter.sendMail({
+    from: senderEmail,
+    to,
+    subject,
+    html: htmlContent,
+  });
 };
 
 module.exports = {
